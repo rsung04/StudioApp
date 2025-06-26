@@ -1,0 +1,10 @@
+[
+  {"instructor": "Ava",      "highestDifficulty": "Advanced"},
+  {"instructor": "Liam",     "highestDifficulty": "Intermediate"},
+  {"instructor": "Noah",     "highestDifficulty": "Advanced"},
+  {"instructor": "Olivia",   "highestDifficulty": "Intermediate"},
+  {"instructor": "Mia",      "highestDifficulty": "Advanced"},
+  {"instructor": "Elijah",   "highestDifficulty": "Intermediate"},
+  {"instructor": "Isabella", "highestDifficulty": "Intermediate"},
+  {"instructor": "Lucas",    "highestDifficulty": "Open"}
+]

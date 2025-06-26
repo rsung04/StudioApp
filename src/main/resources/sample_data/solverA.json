@@ -1,0 +1,11 @@
+[ {
+  "instr" : "Ava",
+  "studioId" : "A",
+  "startSlot" : 228,
+  "lengthSlots" : 36
+}, {
+  "instr" : "Liam",
+  "studioId" : "A",
+  "startSlot" : 288,
+  "lengthSlots" : 24
+} ]

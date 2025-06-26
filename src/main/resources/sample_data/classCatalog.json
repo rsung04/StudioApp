@@ -1,0 +1,19 @@
+[
+  {"id":"intro_to_basework","name":"Intro to Basework","category":"Pole Tricks","difficulty":"Beginner"},
+  {"id":"intro_to_rique_pole_choreo","name":"Intro to Rique Pole Choreo","category":"Pole Choreo","difficulty":"Beginner"},
+  {"id":"pre_adv_adv_pole_tricks","name":"Pre-Adv/Adv Pole Tricks","category":"Pole Tricks","difficulty":"Advanced"},
+  {"id":"adv_xo_pole_choreo","name":"Adv XO Pole Choreo","category":"Pole Choreo","difficulty":"Advanced"},
+  {"id":"inter_2_aerial_tricks","name":"Inter 2 Aerial Tricks","category":"Aerial Tricks","difficulty":"Intermediate"},
+  {"id":"all_things_static_inter","name":"All Things Static (Inter)","category":"Pole Tricks","difficulty":"Intermediate"},
+  {"id":"intro_to_pre_adv_pole_tricks","name":"Intro to Pre-Adv Pole Tricks","category":"Pole Tricks","difficulty":"Beginner"},
+  {"id":"bend_it_like_mucci","name":"Bend It Like Mucci","category":"Stretch and Strength","difficulty":"Advanced"},
+  {"id":"inter_1_aerial_tricks","name":"Inter 1 Aerial Tricks","category":"Aerial Tricks","difficulty":"Intermediate"},
+  {"id":"elementary_aerial_tricks","name":"Elementary Aerial Tricks","category":"Aerial Tricks","difficulty":"Beginner"},
+  {"id":"inter_2_aerial_routine","name":"Inter 2 Aerial Routine","category":"Aerial Routine","difficulty":"Intermediate"},
+  {"id":"handstand_acro_and_floor_tricks","name":"Handstand / Acro / Floor Tricks","category":"Stretch and Strength","difficulty":"Intermediate"},
+  {"id":"silky_pole_choreo","name":"Silky Pole Choreo","category":"Pole Choreo","difficulty":"Open"},
+  {"id":"freaky_floor_choreo","name":"Freaky Floor Choreo","category":"Non-Pole Choreo","difficulty":"Open"},
+  {"id":"hardcore_pole_choreo","name":"Hardcore Pole Choreo","category":"Pole Choreo","difficulty":"Advanced"},
+  {"id":"inter_3_pole_tricks","name":"Inter 3 Pole Tricks","category":"Pole Tricks","difficulty":"Intermediate"},
+  {"id":"inter_3_aerial_routine","name":"Inter 3 Aerial Routine","category":"Aerial Routine","difficulty":"Intermediate"}
+]

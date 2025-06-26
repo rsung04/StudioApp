@@ -1,0 +1,297 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 ArialMT;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red219\green219\blue223;\red219\green219\blue223;
+}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;\cssrgb\c88732\c88733\c89798;\cssrgb\c88732\c88733\c89798;
+}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa60\partightenfactor0
+
+\f0\fs26 \cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 # Project Handover: StudioApp API Backend\
+\
+**To:** Incoming E9 Engineer  \
+**From:** Your Friendly E9 Colleague  \
+**Date:** June 4, 2025  \
+**Project Status:** Initial foundational CRUD APIs established; core entities mapped to PostgreSQL.\
+\
+---\
+\
+## 1. Project Context & Business Understanding\
+\
+### 1.1. Original Problem Statement & User Goals\
+The **StudioApp API** project was initiated to address the limitations of managing dance studio schedules using local JSON files. The existing system was:\
+- Error-prone\
+- Difficult to share\
+- Lacked a centralized "source of truth"\
+- Required local Java/OR-Tools setup for solver execution, limiting accessibility\
+\
+The primary users are studio owners/administrators. Their main goals include:\
+- Efficiently creating and managing weekly/term-based class schedules.\
+- Ensuring instructors are not double-booked and are scheduled within their availability.\
+- Optimizing room/studio utilization.\
+- Easily accommodating high-priority instructor block bookings.\
+- Having a reliable and accessible system for all scheduling data.\
+\
+---\
+\
+## 2. Pole Studio Timetabling & Booking System\
+\
+### 2.1. Original Problem Statement\
+The current **timetabling and scheduling system** used by studios (like Astral) is highly **manual** and relies on **Google Sheets and manual inputs**. This leads to:\
+- **Errors and inconsistencies** (e.g., mismatched times between sheet and app).\
+- **Time-consuming admin work** (e.g., repeated outreach to instructors to confirm preferences).\
+- **Under-utilization of popular classes or instructors** (e.g., popular classes on weekends face cancellations, but there\'92s no dynamic adjustment).\
+- **Lack of data-driven insights** (no easy way to see attendance data, feedback, or which classes perform well).\
+- **Inflexibility for instructors and students** (e.g., no self-service for membership adjustments, glitchy booking and class credit usage).\
+- **No single system that combines scheduling, attendance, feedback, and financials.**\
+\
+---\
+\
+### 2.2. Primary Users & Goals\
+1. **Studio Owner** (e.g., Astral, Chloe, Dorothy)  \
+   **Goals:**\
+   - Quickly and accurately create term timetables.\
+   - Fill classes efficiently to maximize revenue.\
+   - Reduce cancellations and improve student experience.\
+   - Incentivize instructors where needed (e.g., paying more for popular instructors on weekends).\
+   - See data about class performance and attendance.\
+\
+2. **Instructors**  \
+   **Goals:**\
+   - Indicate their preferred times and class types to teach (e.g., floor work, stretch, heels).\
+   - Avoid being double-booked.\
+   - Minimize back-and-forth admin tasks.\
+\
+3. **Students**  ***IGNORE - OUT OF SCOPE***\
+   **Goals:**\
+   - Book classes easily (including seeing accurate and up-to-date timetables).\
+   - Adjust membership levels (pause, upgrade, downgrade) **without manual email requests**.\
+   - Provide quick feedback on classes (e.g., smiley face, rating system).\
+\
+---\
+\
+### 2.3. User Stories (Informal)\
+- *As a studio owner, I want to create and publish the timetable quickly so I don\'92t have to spend hours manually inputting class times and chasing instructors.*\
+- *As an instructor, I want to declare my availability and preferred classes so that the studio can build the timetable around me, reducing back-and-forth.*\
+- *As a student, I want to book classes seamlessly in an app without glitches or confusion about credits.* \outl0\strokewidth0 ***IGNORE - OUT OF SCOPE***\outl0\strokewidth0 \strokec3 \
+- *As a studio owner, I want to see insights (e.g., attendance rates, class popularity, feedback scores) to optimize class schedules and instructor assignments.*\
+- *As a studio owner, I want to incentivize my best instructors on challenging times (like weekends) to boost attendance and revenue.*\
+\
+### 1.2. Core Business Rules & Constraints (Current Understanding)\
+*   An instructor cannot be scheduled for two different activities at the same time.\
+*   A studio/room cannot host two different activities at the same time.\
+*   All scheduled activities for an instructor must fall within their defined availability windows.\
+*   All scheduled activities must occur within the operating hours of the assigned studio/room.\
+*   Certain instructors may have priority requests for dedicated time blocks, which should ideally be scheduled before regular classes.\
+*   Standard class durations are typically fixed (e.g., 60 minutes), but the system should support variable durations defined in `class_definitions`.\
+*   Terms (e.g., "Fall 2025") define specific scheduling periods with start and end dates.\
+*   A term can be organization-wide or specific to a particular studio location within an organization.\
+*   Unique naming/coding conventions apply to terms, class types, and class definitions within their respective scopes (e.g., unique class code per organization).\
+\
+### 1.3. Glossary of Terms\
+*(To be filled in by Richard Sung with specific studio context definitions)*\
+*   **Term:**\
+*   **Studio / Room:**\
+*   **Instructor:**\
+*   **Availability (Instructor):**\
+*   **Operating Hours (Room/Studio):**\
+*   **Slot / Time Slot:**\
+*   **`slotMinutes`:**\
+*   **Class Type:** (e.g., Pole, Stretch - the broader category)\
+*   **Class Definition:** (e.g., "Intro to Pole Level 1" - the specific schedulable class)\
+*   **Class Code:** (e.g., "PBEG01")\
+*   **Duration (Class):**\
+*   **Level (Class):**\
+*   **Capacity (Room):**\
+*   **Default Studio Capacity Needed (Class Definition):**\
+*   **Instructor Class Qualification:** (The link showing an instructor can teach a specific class definition)\
+*   **Priority Request (Instructor):**\
+*   **Block Length (Priority Request):**\
+*   **Relative Priority (Priority Request):**\
+*   **Class Session Requirement:** (The "demand" for how many times a class definition should run per week)\
+*   **Sessions Per Week:**\
+*   **Solver:** (Referring to the OR-Tools CP-SAT based engine)\
+*   **Stage A (Solver):**\
+*   **Stage B (Solver):**\
+*   **Locked Block:** (Output of Stage A, input to Stage B in the original JSON-based solver)\
+*   **Scheduled Event:** (The database representation of a successfully scheduled class or priority block)\
+*   **Organization:** (The overarching entity, e.g., the dance studio business itself)\
+*   **Studio Location:** (If an organization has multiple physical branches/sites)\
+*   **API (Application Programming Interface):**\
+*   **DTO (Data Transfer Object):**\
+*   **Entity (JPA):**\
+*   **Repository (Spring Data JPA):**\
+*   **Service (Spring):**\
+*   **Controller (Spring):**\
+\
+## 2. Current State & Accomplishments\
+\
+*   **Spring Boot Application (`studioapp-api`):**\
+    *   Initialized using Spring Initializr (Maven, Java 17, Spring Boot 3.x).\
+    *   Core dependencies: `spring-boot-starter-web`, `spring-boot-starter-data-jpa`, `postgresql` driver, `lombok`.\
+    *   Google OR-Tools (`ortools-java`) dependency added to `pom.xml`.\
+*   **Database Connectivity:**\
+    *   Successfully connected to a Google Cloud SQL for PostgreSQL instance.\
+    *   Local development connection via Cloud SQL Auth Proxy, using Google Cloud ADC.\
+    *   `application.properties` configured.\
+*   **JPA Entities & Repositories:**\
+    *   Entities created (`com.example.studioapp_api.entity`): `Organization`, `Instructor` (basic), `StudioLocation`, `Room`, `DayOfWeekEnum`, `RoomOperatingHours`, `ClassType`, `ClassDefinition`, `InstructorClassQualificationId`, `InstructorClassQualification`.\
+    *   Corresponding Spring Data JPA Repositories created (`com.example.studioapp_api.repository`).\
+    *   `spring.jpa.hibernate.ddl-auto=validate` is active; application starts successfully.\
+*   **API Endpoints Implemented (CRUD unless noted):**\
+    *   `Organization`: Full CRUD.\
+    *   `ClassType`: Full CRUD.\
+    *   `ClassDefinition`: Create & Read (Update/Delete pending).\
+    *   `InstructorClassQualification`: Create, Read (by instructor/class def), Update (notes only), Delete.\
+    *   `Term`: Create & Read (Update/Delete pending).\
+*   **DTOs:** Request/Response DTOs implemented for above entities, with some denormalized data in responses.\
+*   **Service Layer:** Services implemented for above entities with business logic and `@Transactional` management. Basic error handling (e.g., `EntityNotFoundException`) in place.\
+*   **Testing:** Basic manual API testing via Postman.\
+\
+## 3. Technical Architecture & Design\
+\
+### 3.1. Database Schema Diagram (Visual)\
+*   **(Action Item):** Generate an ERD from the PostgreSQL database using `pg_dump` output (provided separately) with a tool like dbdiagram.io or an IDE's database visualizer.\
+*   **Key aspects the ERD should visualize:** All tables, Primary Keys, Foreign Key relationships, Cardinality.\
+\
+### 3.2. API Design Philosophy & Conventions\
+*   **Style:** RESTful HTTP.\
+*   **Data Format:** JSON for request and response bodies.\
+*   **Versioning:** Current base path `/api/v1/`.\
+*   **URL Naming Conventions:** Plural nouns for collections (e.g., `/organizations`), path parameters for specific resources (e.g., `/organizations/\{id\}`), nested resources where appropriate (e.g., `/organizations/\{organizationId\}/classtypes`).\
+*   **HTTP Methods:** Standard `POST`, `GET`, `PUT`, `DELETE`. `PATCH` for future consideration.\
+*   **Status Codes (Current & Target):**\
+    *   Implemented: `200 OK`, `201 Created`, `204 No Content`. Default Spring Boot handling for errors (often 500 for unmapped exceptions).\
+    *   Target: Refined error handling for `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `409 Conflict`.\
+*   **Request/Response Structure:** DTOs used. Response DTOs include some denormalized data.\
+*   **Error Response Body (Target):** Consistent JSON structure for errors (e.g., including timestamp, status, error, message, path).\
+\
+### 3.3. Solver Logic Deep Dive (Current `DanceTimetableSolver.java` & Future Integration)\
+*   **Current State (JSON-based; code present in `com.example.studioapp_api.timetable`):**\
+    *   **Input:** Reads from multiple JSON files.\
+    *   **Core Concepts:** Time discretization (`slotMinutes`, `TOTAL_SLOTS`, day/time to slot index conversion), resources (Instructors, Studios), constraints (no-overlap for instructor/studio, instructor availability, studio operating hours).\
+    *   **Solver Engine:** Google OR-Tools CP-SAT Solver (using `IntVar`, `BoolVar`, `IntervalVar`, `addNoOverlap`, etc.).\
+    *   **Two-Stage Process:** Stage A (priority blocks, output to `solverA.json`), Stage B (fills remaining with standard classes around locked blocks).\
+    *   **Output:** Console timetable, `solverA.json`.\
+*   **Planned Integration with Spring Boot & Database:**\
+    *   **Data Source:** Solver will fetch all inputs from PostgreSQL via Spring services/repositories.\
+    *   **Invocation:** Via an API endpoint (e.g., `POST /api/v1/solver/run`).\
+    *   **Asynchronous Execution:** Essential; will use Spring's `@Async` or Google Cloud Tasks.\
+    *   **Output Storage:** Results (scheduled events) saved to `scheduled_events` table.\
+    *   **Parameterization:** Solver run scoped by `term_id`, `organization_id`, etc.\
+\
+### 3.4. Deployment Environment Details (Google Cloud)\
+*   **Google Cloud Project ID:** `polestudiowebapp`\
+*   **Primary Region:** `australia-southeast1`\
+*   **Cloud SQL Instance Details:**\
+    *   **Instance Connection Name:** `polestudiowebapp:australia-southeast1:studioapp-db`\
+    *   **Database Engine:** PostgreSQL (Version 17.5)\
+    *   **Database Name (in JDBC URL):** `postgres`\
+    *   **Primary Database User:** `postgres`\
+    *   **Connectivity (Local Dev):** Via Cloud SQL Auth Proxy (no `--private-ip` flag) using ADC. Proxy listens on `127.0.0.1:5432`.\
+*   **Backend Application Hosting (Planned):** Google Cloud Run (recommended) or App Engine Flexible Environment (due to OR-Tools native libraries requiring Docker).\
+*   **Authentication for Proxy (Local Dev):** `gcloud auth application-default login`.\
+*   **IAM (Future Deployment):** Service account with "Cloud SQL Client" role for deployed application.\
+\
+### 3.5. Key Technical Decisions & Rationale (Summary)\
+*   **Framework:** Spring Boot (rapid API dev, data access).\
+*   **Database:** PostgreSQL on Google Cloud SQL (managed, relational).\
+*   **Data Access:** Spring Data JPA/Hibernate (ORM, reduced boilerplate).\
+*   **API:** RESTful JSON APIs.\
+*   **Cloud SQL Proxy:** Secure local dev access.\
+*   **Many-to-Many:** Join table promoted to Entity (`InstructorClassQualification`) due to extra columns.\
+*   **Timestamps:** DB defaults + Hibernate `@CreationTimestamp`/`@UpdateTimestamp`. `saveAndFlush()` + `findById()` pattern adopted for immediate DTO response consistency with DB-generated values.\
+*   **Package Structure:** Standard Spring Boot (`entity`, `repository`, `service`, `controller`, `dto`).\
+*   **DTO Denormalization:** Including related entity names in responses for client ease.\
+\
+## 4. Current Challenges / Known Issues\
+*   **Comprehensive Error Handling:** Requires a global exception handler (`@ControllerAdvice`) for consistent HTTP error responses.\
+*   **Input Validation:** `jakarta.validation` needs to be fully implemented in DTOs and enabled in controllers.\
+*   **Solver Integration:** Major pending task. Requires refactoring `DanceTimetableSolver.java` to use DB data and implementing asynchronous execution.\
+*   **API Security:** No authN/authZ implemented.\
+*   **Automated Testing:** Unit and integration tests are needed.\
+*   **Incomplete CRUD:** `Update`/`Delete` operations pending for `Term` and `ClassDefinition`.\
+\
+## 5. Next Development Tasks: StudioApp API Backend\
+\
+### A. Complete Core Data Management APIs\
+\uc0\u9989  We have:\
+- `addQualification`, `removeQualification`, and `updateQualificationNotes` for **InstructorClassQualification**.\
+- `create` and `get` methods for **Term** and **ClassDefinition**.\
+\
+\uc0\u55357 \u56615  **To do**:\
+- **A1: Full CRUD for Instructors (Highly Recommended Next)**  \
+  Build full CRUD APIs for `Instructor`, similar to `Organization`.\
+- **A2: Full CRUD for Terms & ClassDefinitions**  \
+  Add `update` and `delete` methods for `Term` and `ClassDefinition` in their respective services and controllers.\
+- **A3: instructor_availability_slots Entity & API**  \
+  CRUD APIs for managing when instructors are available.\
+- **A4: "Demand" Entities & APIs**  \
+  - `instructor_priority_requests` (specific block requests from instructors)  \
+  - `class_session_requirements` (how many sessions of a class are needed per week)  \
+\
+\uc0\u9989  Completing these will make the APIs **fully manageable**.\
+\
+---\
+\
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa60\partightenfactor0
+\cf2 \outl0\strokewidth0 ### \outl0\strokewidth0 \strokec3 B. Enhance API Robustness & DX (Developer Experience)\
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa60\partightenfactor0
+\cf2 \uc0\u55357 \u56615  **To do**:\
+- **B1: Global Exception Handling**  \
+  Ensure consistent error handling across all endpoints.\
+- **B2: Input Validation**  \
+  Validate API request payloads to prevent invalid data.\
+- **B3: API Documentation (Swagger/OpenAPI)**  \
+  Generate comprehensive API documentation for easier integration and onboarding.\
+\
+---\
+\
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa60\partightenfactor0
+\cf2 \outl0\strokewidth0 ###\outl0\strokewidth0 \strokec3  C. Solver Integration\
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa60\partightenfactor0
+\cf2 \uc0\u55357 \u56615  **To do**:\
+- **C1: Design SolverService Interface & basic implementation**  \
+  Abstract the solver logic behind a service layer.\
+- **C2: Adapt DanceTimetableSolver.java for DB input & structured output**  \
+  Replace JSON input with DB-driven data; output in a structured format.\
+- **C3: Asynchronous Solver Execution**  \
+  Ensure solver runs as a background process and doesn\'92t block the API.\
+- **C4: Storing Solver Output**  \
+  Save results in the `scheduled_events` entity and expose via API.\
+\
+---\
+\
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa60\partightenfactor0
+\cf2 \outl0\strokewidth0 ###\outl0\strokewidth0 \strokec3  D. Testing & Quality\
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa60\partightenfactor0
+\cf2 \uc0\u55357 \u56615  **To do**:\
+- **D1: Unit Tests (Services)**  \
+  Thoroughly test the core service logic for correctness and stability.\
+- **D2: Integration Tests (Controllers/DB interaction)**  \
+  Verify that endpoints work as expected with the database.\
+\
+---\
+\
+### Summary of Current CRUD Gaps\
+- **InstructorClassQualification**:  \
+  - No general "update" for `instructorId` and `classDefinitionId` because their identity is defined by these keys. Changing them requires deleting and creating a new entry.  \
+  - `updateQualificationNotes` is sufficient for notes management.\
+\
+\uc0\u9989  With these tasks, we\'92ll move from **foundational CRUD** to **full API coverage, robustness, and solver readiness**.\
+\
+**Recommended Path:**\
+1.  **Short Term:** A1 (Instructors CRUD), B1 (Global Exception Handling), B2 (Input Validation).\
+2.  **Mid Term:** A2, A3. Then C1, C2 (basic solver call).\
+3.  **Longer Term:** A4, C3, C4. Then D1, D2, B3.\
+\
+## 6. Supporting Information\
+*   **Database Schema:** `pg_dump` output (to be provided separately).\
+*   **Source Code Repository:** (Link to be provided).\
+*   **Postman Collection:** (To be exported and provided) - Contains example requests for implemented API endpoints.\
+\
+---\
+\
+}

@@ -1,0 +1,1562 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fmodern\fcharset0 Courier;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs26 \cf0 \expnd0\expndtw0\kerning0
+--\
+-- PostgreSQL database dump\
+--\
+\
+-- Dumped from database version 17.5\
+-- Dumped by pg_dump version 17.4\
+\
+SET statement_timeout = 0;\
+SET lock_timeout = 0;\
+SET idle_in_transaction_session_timeout = 0;\
+SET transaction_timeout = 0;\
+SET client_encoding = 'UTF8';\
+SET standard_conforming_strings = on;\
+SELECT pg_catalog.set_config('search_path', '', false);\
+SET check_function_bodies = false;\
+SET xmloption = content;\
+SET client_min_messages = warning;\
+SET row_security = off;\
+\
+--\
+-- Name: trigger_set_timestamp(); Type: FUNCTION; Schema: public; Owner: -\
+--\
+\
+CREATE FUNCTION public.trigger_set_timestamp() RETURNS trigger\
+    LANGUAGE plpgsql\
+    AS $$\
+BEGIN\
+  NEW.updated_at = NOW();\
+  RETURN NEW;\
+END;\
+$$;\
+\
+\
+SET default_tablespace = '';\
+\
+SET default_table_access_method = heap;\
+\
+--\
+-- Name: class_definitions; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.class_definitions (\
+    id integer NOT NULL,\
+    organization_id integer NOT NULL,\
+    class_type_id integer NOT NULL,\
+    class_code character varying(100) NOT NULL,\
+    name character varying(255) NOT NULL,\
+    description text,\
+    duration_minutes integer NOT NULL,\
+    level character varying(50),\
+    default_studio_capacity_needed integer,\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    CONSTRAINT class_definitions_default_studio_capacity_needed_check CHECK (((default_studio_capacity_needed IS NULL) OR (default_studio_capacity_needed > 0))),\
+    CONSTRAINT class_definitions_duration_minutes_check CHECK ((duration_minutes > 0))\
+);\
+\
+\
+--\
+-- Name: TABLE class_definitions; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.class_definitions IS 'Specific classes offered (e.g., "Exotic Flow"), linked to an organization and a class_type.';\
+\
+\
+--\
+-- Name: COLUMN class_definitions.class_code; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.class_definitions.class_code IS 'Short unique code for the class - Unique within the organization.';\
+\
+\
+--\
+-- Name: COLUMN class_definitions.duration_minutes; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.class_definitions.duration_minutes IS 'Length of this class type in minutes.';\
+\
+\
+--\
+-- Name: COLUMN class_definitions.level; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.class_definitions.level IS 'Optional: Difficulty level (e.g., "Beginner", "Open").';\
+\
+\
+--\
+-- Name: COLUMN class_definitions.default_studio_capacity_needed; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.class_definitions.default_studio_capacity_needed IS 'Optional: Typical minimum studio capacity this class might need.';\
+\
+\
+--\
+-- Name: class_definitions_id_seq; Type: SEQUENCE; Schema: public; Owner: -\
+--\
+\
+CREATE SEQUENCE public.class_definitions_id_seq\
+    AS integer\
+    START WITH 1\
+    INCREMENT BY 1\
+    NO MINVALUE\
+    NO MAXVALUE\
+    CACHE 1;\
+\
+\
+--\
+-- Name: class_definitions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -\
+--\
+\
+ALTER SEQUENCE public.class_definitions_id_seq OWNED BY public.class_definitions.id;\
+\
+\
+--\
+-- Name: class_session_requirements; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.class_session_requirements (\
+    id integer NOT NULL,\
+    term_id integer NOT NULL,\
+    class_definition_id integer NOT NULL,\
+    studio_location_id integer,\
+    sessions_per_week integer NOT NULL,\
+    is_active boolean DEFAULT true NOT NULL,\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    CONSTRAINT class_session_requirements_sessions_per_week_check CHECK ((sessions_per_week > 0))\
+);\
+\
+\
+--\
+-- Name: TABLE class_session_requirements; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.class_session_requirements IS 'Demand for sessions of a class_definition for a term, optionally for a specific studio_location.';\
+\
+\
+--\
+-- Name: COLUMN class_session_requirements.studio_location_id; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.class_session_requirements.studio_location_id IS 'Optional: At which location within the org this requirement is for. If NULL, it''s a general need for that org.';\
+\
+\
+--\
+-- Name: COLUMN class_session_requirements.is_active; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.class_session_requirements.is_active IS 'Is this requirement currently active?';\
+\
+\
+--\
+-- Name: class_session_requirements_id_seq; Type: SEQUENCE; Schema: public; Owner: -\
+--\
+\
+CREATE SEQUENCE public.class_session_requirements_id_seq\
+    AS integer\
+    START WITH 1\
+    INCREMENT BY 1\
+    NO MINVALUE\
+    NO MAXVALUE\
+    CACHE 1;\
+\
+\
+--\
+-- Name: class_session_requirements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -\
+--\
+\
+ALTER SEQUENCE public.class_session_requirements_id_seq OWNED BY public.class_session_requirements.id;\
+\
+\
+--\
+-- Name: class_types; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.class_types (\
+    id integer NOT NULL,\
+    organization_id integer NOT NULL,\
+    name character varying(255) NOT NULL,\
+    description text,\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL\
+);\
+\
+\
+--\
+-- Name: TABLE class_types; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.class_types IS 'Broad categories for classes (e.g., "Pole Dance," "Stretch"), defined by an organization.';\
+\
+\
+--\
+-- Name: COLUMN class_types.name; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.class_types.name IS 'Name of the class type - Unique within the organization.';\
+\
+\
+--\
+-- Name: class_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -\
+--\
+\
+CREATE SEQUENCE public.class_types_id_seq\
+    AS integer\
+    START WITH 1\
+    INCREMENT BY 1\
+    NO MINVALUE\
+    NO MAXVALUE\
+    CACHE 1;\
+\
+\
+--\
+-- Name: class_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -\
+--\
+\
+ALTER SEQUENCE public.class_types_id_seq OWNED BY public.class_types.id;\
+\
+\
+--\
+-- Name: instructor_availability_slots; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.instructor_availability_slots (\
+    id integer NOT NULL,\
+    instructor_id integer NOT NULL,\
+    studio_location_id integer,\
+    day_of_week character varying(10) NOT NULL,\
+    start_time time without time zone NOT NULL,\
+    end_time time without time zone NOT NULL,\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    CONSTRAINT chk_instructor_avail_time CHECK ((end_time > start_time)),\
+    CONSTRAINT instructor_availability_slots_day_of_week_check CHECK (((day_of_week)::text = ANY ((ARRAY['MONDAY'::character varying, 'TUESDAY'::character varying, 'WEDNESDAY'::character varying, 'THURSDAY'::character varying, 'FRIDAY'::character varying, 'SATURDAY'::character varying, 'SUNDAY'::character varying])::text[])))\
+);\
+\
+\
+--\
+-- Name: TABLE instructor_availability_slots; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.instructor_availability_slots IS 'Specifies when an instructor is available, optionally for a specific studio_location within their organization.';\
+\
+\
+--\
+-- Name: COLUMN instructor_availability_slots.studio_location_id; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.instructor_availability_slots.studio_location_id IS 'Optional: Which location within their org this availability is for. If NULL, it''s general for their org.';\
+\
+\
+--\
+-- Name: instructor_availability_slots_id_seq; Type: SEQUENCE; Schema: public; Owner: -\
+--\
+\
+CREATE SEQUENCE public.instructor_availability_slots_id_seq\
+    AS integer\
+    START WITH 1\
+    INCREMENT BY 1\
+    NO MINVALUE\
+    NO MAXVALUE\
+    CACHE 1;\
+\
+\
+--\
+-- Name: instructor_availability_slots_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -\
+--\
+\
+ALTER SEQUENCE public.instructor_availability_slots_id_seq OWNED BY public.instructor_availability_slots.id;\
+\
+\
+--\
+-- Name: instructor_class_qualifications; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.instructor_class_qualifications (\
+    instructor_id integer NOT NULL,\
+    class_definition_id integer NOT NULL,\
+    notes text,\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL\
+);\
+\
+\
+--\
+-- Name: TABLE instructor_class_qualifications; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.instructor_class_qualifications IS 'Links instructors to class_definitions they are qualified to teach (Many-to-Many).';\
+\
+\
+--\
+-- Name: instructor_priority_requests; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.instructor_priority_requests (\
+    id integer NOT NULL,\
+    instructor_id integer NOT NULL,\
+    term_id integer NOT NULL,\
+    studio_location_id integer,\
+    relative_priority integer DEFAULT 1 NOT NULL,\
+    block_length_hours integer NOT NULL,\
+    description text,\
+    is_active boolean DEFAULT true NOT NULL,\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    CONSTRAINT instructor_priority_requests_block_length_hours_check CHECK ((block_length_hours > 0))\
+);\
+\
+\
+--\
+-- Name: TABLE instructor_priority_requests; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.instructor_priority_requests IS 'Requests from instructors for dedicated time blocks within a term, optionally for a specific studio_location.';\
+\
+\
+--\
+-- Name: COLUMN instructor_priority_requests.relative_priority; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.instructor_priority_requests.relative_priority IS 'Relative importance (e.g., 1=highest).';\
+\
+\
+--\
+-- Name: COLUMN instructor_priority_requests.block_length_hours; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.instructor_priority_requests.block_length_hours IS 'Requested length in whole hours.';\
+\
+\
+--\
+-- Name: COLUMN instructor_priority_requests.is_active; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.instructor_priority_requests.is_active IS 'Is this request currently active/to be considered by the solver?';\
+\
+\
+--\
+-- Name: instructor_priority_requests_id_seq; Type: SEQUENCE; Schema: public; Owner: -\
+--\
+\
+CREATE SEQUENCE public.instructor_priority_requests_id_seq\
+    AS integer\
+    START WITH 1\
+    INCREMENT BY 1\
+    NO MINVALUE\
+    NO MAXVALUE\
+    CACHE 1;\
+\
+\
+--\
+-- Name: instructor_priority_requests_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -\
+--\
+\
+ALTER SEQUENCE public.instructor_priority_requests_id_seq OWNED BY public.instructor_priority_requests.id;\
+\
+\
+--\
+-- Name: instructors; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.instructors (\
+    id integer NOT NULL,\
+    organization_id integer NOT NULL,\
+    name character varying(255) NOT NULL,\
+    email character varying(255),\
+    phone_number character varying(50),\
+    bio text,\
+    instagram_username character varying(100),\
+    tiktok_username character varying(100),\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL\
+);\
+\
+\
+--\
+-- Name: TABLE instructors; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.instructors IS 'Information about each instructor, belonging to an organization.';\
+\
+\
+--\
+-- Name: COLUMN instructors.name; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.instructors.name IS 'Instructor''s full name - Unique within the organization.';\
+\
+\
+--\
+-- Name: COLUMN instructors.email; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.instructors.email IS 'Instructor''s email address - Unique within the organization if provided.';\
+\
+\
+--\
+-- Name: instructors_id_seq; Type: SEQUENCE; Schema: public; Owner: -\
+--\
+\
+CREATE SEQUENCE public.instructors_id_seq\
+    AS integer\
+    START WITH 1\
+    INCREMENT BY 1\
+    NO MINVALUE\
+    NO MAXVALUE\
+    CACHE 1;\
+\
+\
+--\
+-- Name: instructors_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -\
+--\
+\
+ALTER SEQUENCE public.instructors_id_seq OWNED BY public.instructors.id;\
+\
+\
+--\
+-- Name: organizations; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.organizations (\
+    id integer NOT NULL,\
+    name character varying(255) NOT NULL,\
+    subdomain character varying(100),\
+    contact_email character varying(255),\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL\
+);\
+\
+\
+--\
+-- Name: TABLE organizations; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.organizations IS 'Represents each dance studio business using the platform.';\
+\
+\
+--\
+-- Name: COLUMN organizations.name; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.organizations.name IS 'Name of the dance studio business (e.g., "Happy Feet Dance Academy")';\
+\
+\
+--\
+-- Name: COLUMN organizations.subdomain; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.organizations.subdomain IS 'Optional: for custom URL access (e.g., "happyfeet.yourapp.com")';\
+\
+\
+--\
+-- Name: organizations_id_seq; Type: SEQUENCE; Schema: public; Owner: -\
+--\
+\
+CREATE SEQUENCE public.organizations_id_seq\
+    AS integer\
+    START WITH 1\
+    INCREMENT BY 1\
+    NO MINVALUE\
+    NO MAXVALUE\
+    CACHE 1;\
+\
+\
+--\
+-- Name: organizations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -\
+--\
+\
+ALTER SEQUENCE public.organizations_id_seq OWNED BY public.organizations.id;\
+\
+\
+--\
+-- Name: room_operating_hours; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.room_operating_hours (\
+    id integer NOT NULL,\
+    room_id integer NOT NULL,\
+    day_of_week character varying(10) NOT NULL,\
+    start_time time without time zone NOT NULL,\
+    end_time time without time zone NOT NULL,\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    CONSTRAINT chk_room_hours_time CHECK ((end_time > start_time)),\
+    CONSTRAINT room_operating_hours_day_of_week_check CHECK (((day_of_week)::text = ANY ((ARRAY['MONDAY'::character varying, 'TUESDAY'::character varying, 'WEDNESDAY'::character varying, 'THURSDAY'::character varying, 'FRIDAY'::character varying, 'SATURDAY'::character varying, 'SUNDAY'::character varying])::text[])))\
+);\
+\
+\
+--\
+-- Name: TABLE room_operating_hours; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.room_operating_hours IS 'Specifies when each room is open, per day of the week.';\
+\
+\
+--\
+-- Name: room_operating_hours_id_seq; Type: SEQUENCE; Schema: public; Owner: -\
+--\
+\
+CREATE SEQUENCE public.room_operating_hours_id_seq\
+    AS integer\
+    START WITH 1\
+    INCREMENT BY 1\
+    NO MINVALUE\
+    NO MAXVALUE\
+    CACHE 1;\
+\
+\
+--\
+-- Name: room_operating_hours_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -\
+--\
+\
+ALTER SEQUENCE public.room_operating_hours_id_seq OWNED BY public.room_operating_hours.id;\
+\
+\
+--\
+-- Name: rooms; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.rooms (\
+    id integer NOT NULL,\
+    studio_location_id integer NOT NULL,\
+    name character varying(255) NOT NULL,\
+    capacity integer,\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    CONSTRAINT rooms_capacity_check CHECK (((capacity IS NULL) OR (capacity > 0)))\
+);\
+\
+\
+--\
+-- Name: TABLE rooms; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.rooms IS 'Defines individual rooms within a studio_location.';\
+\
+\
+--\
+-- Name: COLUMN rooms.name; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.rooms.name IS 'Room''s name (e.g., "Main Studio") - Unique within its studio_location.';\
+\
+\
+--\
+-- Name: COLUMN rooms.capacity; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.rooms.capacity IS 'Maximum number of people (optional).';\
+\
+\
+--\
+-- Name: rooms_id_seq; Type: SEQUENCE; Schema: public; Owner: -\
+--\
+\
+CREATE SEQUENCE public.rooms_id_seq\
+    AS integer\
+    START WITH 1\
+    INCREMENT BY 1\
+    NO MINVALUE\
+    NO MAXVALUE\
+    CACHE 1;\
+\
+\
+--\
+-- Name: rooms_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -\
+--\
+\
+ALTER SEQUENCE public.rooms_id_seq OWNED BY public.rooms.id;\
+\
+\
+--\
+-- Name: scheduled_events; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.scheduled_events (\
+    id integer NOT NULL,\
+    organization_id integer NOT NULL,\
+    term_id integer NOT NULL,\
+    week_number_in_term integer NOT NULL,\
+    event_type character varying(50) NOT NULL,\
+    studio_location_id integer NOT NULL,\
+    room_id integer NOT NULL,\
+    instructor_id integer NOT NULL,\
+    class_definition_id integer,\
+    instructor_priority_request_id integer,\
+    class_session_requirement_id integer,\
+    start_datetime timestamp with time zone NOT NULL,\
+    end_datetime timestamp with time zone NOT NULL,\
+    solver_job_id character varying(100),\
+    notes text,\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    CONSTRAINT chk_scheduled_events_fk_logic CHECK (((((event_type)::text = 'CLASS_SESSION'::text) AND (class_definition_id IS NOT NULL)) OR (((event_type)::text = 'PRIORITY_BLOCK'::text) AND (instructor_priority_request_id IS NOT NULL)))),\
+    CONSTRAINT chk_scheduled_events_time CHECK ((end_datetime > start_datetime)),\
+    CONSTRAINT scheduled_events_event_type_check CHECK (((event_type)::text = ANY ((ARRAY['PRIORITY_BLOCK'::character varying, 'CLASS_SESSION'::character varying])::text[]))),\
+    CONSTRAINT scheduled_events_week_number_in_term_check CHECK ((week_number_in_term > 0))\
+);\
+\
+\
+--\
+-- Name: TABLE scheduled_events; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.scheduled_events IS 'Stores successfully scheduled priority blocks and class sessions.';\
+\
+\
+--\
+-- Name: COLUMN scheduled_events.week_number_in_term; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.scheduled_events.week_number_in_term IS 'Which week of the term (1-indexed).';\
+\
+\
+--\
+-- Name: COLUMN scheduled_events.event_type; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.scheduled_events.event_type IS 'Type: ''PRIORITY_BLOCK'', ''CLASS_SESSION''.';\
+\
+\
+--\
+-- Name: COLUMN scheduled_events.solver_job_id; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.scheduled_events.solver_job_id IS 'Optional: ID of the solver run that generated this event.';\
+\
+\
+--\
+-- Name: scheduled_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -\
+--\
+\
+CREATE SEQUENCE public.scheduled_events_id_seq\
+    AS integer\
+    START WITH 1\
+    INCREMENT BY 1\
+    NO MINVALUE\
+    NO MAXVALUE\
+    CACHE 1;\
+\
+\
+--\
+-- Name: scheduled_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -\
+--\
+\
+ALTER SEQUENCE public.scheduled_events_id_seq OWNED BY public.scheduled_events.id;\
+\
+\
+--\
+-- Name: studio_locations; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.studio_locations (\
+    id integer NOT NULL,\
+    organization_id integer NOT NULL,\
+    name character varying(255) NOT NULL,\
+    address text,\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL\
+);\
+\
+\
+--\
+-- Name: TABLE studio_locations; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.studio_locations IS 'Physical branches/locations belonging to an organization.';\
+\
+\
+--\
+-- Name: COLUMN studio_locations.name; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.studio_locations.name IS 'Name of the location (e.g., "Downtown Branch") - Unique within an organization.';\
+\
+\
+--\
+-- Name: studio_locations_id_seq; Type: SEQUENCE; Schema: public; Owner: -\
+--\
+\
+CREATE SEQUENCE public.studio_locations_id_seq\
+    AS integer\
+    START WITH 1\
+    INCREMENT BY 1\
+    NO MINVALUE\
+    NO MAXVALUE\
+    CACHE 1;\
+\
+\
+--\
+-- Name: studio_locations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -\
+--\
+\
+ALTER SEQUENCE public.studio_locations_id_seq OWNED BY public.studio_locations.id;\
+\
+\
+--\
+-- Name: terms; Type: TABLE; Schema: public; Owner: -\
+--\
+\
+CREATE TABLE public.terms (\
+    id integer NOT NULL,\
+    organization_id integer NOT NULL,\
+    studio_location_id integer,\
+    name character varying(100) NOT NULL,\
+    start_date date NOT NULL,\
+    end_date date NOT NULL,\
+    is_active_for_planning boolean DEFAULT false NOT NULL,\
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,\
+    CONSTRAINT chk_terms_end_date CHECK ((end_date >= start_date))\
+);\
+\
+\
+--\
+-- Name: TABLE terms; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON TABLE public.terms IS 'Defines specific term instances with start/end dates, belonging to an organization, optionally to a specific location.';\
+\
+\
+--\
+-- Name: COLUMN terms.studio_location_id; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.terms.studio_location_id IS 'Optional: If this term is specific to one location within the organization. If NULL, it applies to all locations of that org.';\
+\
+\
+--\
+-- Name: COLUMN terms.name; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.terms.name IS 'Name of the term (e.g., "Fall 2025", "Term 1")';\
+\
+\
+--\
+-- Name: COLUMN terms.is_active_for_planning; Type: COMMENT; Schema: public; Owner: -\
+--\
+\
+COMMENT ON COLUMN public.terms.is_active_for_planning IS 'Flag: Is this term currently being planned for by this org?';\
+\
+\
+--\
+-- Name: terms_id_seq; Type: SEQUENCE; Schema: public; Owner: -\
+--\
+\
+CREATE SEQUENCE public.terms_id_seq\
+    AS integer\
+    START WITH 1\
+    INCREMENT BY 1\
+    NO MINVALUE\
+    NO MAXVALUE\
+    CACHE 1;\
+\
+\
+--\
+-- Name: terms_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -\
+--\
+\
+ALTER SEQUENCE public.terms_id_seq OWNED BY public.terms.id;\
+\
+\
+--\
+-- Name: class_definitions id; Type: DEFAULT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_definitions ALTER COLUMN id SET DEFAULT nextval('public.class_definitions_id_seq'::regclass);\
+\
+\
+--\
+-- Name: class_session_requirements id; Type: DEFAULT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_session_requirements ALTER COLUMN id SET DEFAULT nextval('public.class_session_requirements_id_seq'::regclass);\
+\
+\
+--\
+-- Name: class_types id; Type: DEFAULT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_types ALTER COLUMN id SET DEFAULT nextval('public.class_types_id_seq'::regclass);\
+\
+\
+--\
+-- Name: instructor_availability_slots id; Type: DEFAULT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructor_availability_slots ALTER COLUMN id SET DEFAULT nextval('public.instructor_availability_slots_id_seq'::regclass);\
+\
+\
+--\
+-- Name: instructor_priority_requests id; Type: DEFAULT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructor_priority_requests ALTER COLUMN id SET DEFAULT nextval('public.instructor_priority_requests_id_seq'::regclass);\
+\
+\
+--\
+-- Name: instructors id; Type: DEFAULT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructors ALTER COLUMN id SET DEFAULT nextval('public.instructors_id_seq'::regclass);\
+\
+\
+--\
+-- Name: organizations id; Type: DEFAULT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.organizations ALTER COLUMN id SET DEFAULT nextval('public.organizations_id_seq'::regclass);\
+\
+\
+--\
+-- Name: room_operating_hours id; Type: DEFAULT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.room_operating_hours ALTER COLUMN id SET DEFAULT nextval('public.room_operating_hours_id_seq'::regclass);\
+\
+\
+--\
+-- Name: rooms id; Type: DEFAULT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.rooms ALTER COLUMN id SET DEFAULT nextval('public.rooms_id_seq'::regclass);\
+\
+\
+--\
+-- Name: scheduled_events id; Type: DEFAULT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.scheduled_events ALTER COLUMN id SET DEFAULT nextval('public.scheduled_events_id_seq'::regclass);\
+\
+\
+--\
+-- Name: studio_locations id; Type: DEFAULT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.studio_locations ALTER COLUMN id SET DEFAULT nextval('public.studio_locations_id_seq'::regclass);\
+\
+\
+--\
+-- Name: terms id; Type: DEFAULT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.terms ALTER COLUMN id SET DEFAULT nextval('public.terms_id_seq'::regclass);\
+\
+\
+--\
+-- Data for Name: class_definitions; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.class_definitions (id, organization_id, class_type_id, class_code, name, description, duration_minutes, level, default_studio_capacity_needed, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Data for Name: class_session_requirements; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.class_session_requirements (id, term_id, class_definition_id, studio_location_id, sessions_per_week, is_active, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Data for Name: class_types; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.class_types (id, organization_id, name, description, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Data for Name: instructor_availability_slots; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.instructor_availability_slots (id, instructor_id, studio_location_id, day_of_week, start_time, end_time, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Data for Name: instructor_class_qualifications; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.instructor_class_qualifications (instructor_id, class_definition_id, notes, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Data for Name: instructor_priority_requests; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.instructor_priority_requests (id, instructor_id, term_id, studio_location_id, relative_priority, block_length_hours, description, is_active, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Data for Name: instructors; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.instructors (id, organization_id, name, email, phone_number, bio, instagram_username, tiktok_username, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Data for Name: organizations; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.organizations (id, name, subdomain, contact_email, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Data for Name: room_operating_hours; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.room_operating_hours (id, room_id, day_of_week, start_time, end_time, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Data for Name: rooms; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.rooms (id, studio_location_id, name, capacity, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Data for Name: scheduled_events; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.scheduled_events (id, organization_id, term_id, week_number_in_term, event_type, studio_location_id, room_id, instructor_id, class_definition_id, instructor_priority_request_id, class_session_requirement_id, start_datetime, end_datetime, solver_job_id, notes, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Data for Name: studio_locations; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.studio_locations (id, organization_id, name, address, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Data for Name: terms; Type: TABLE DATA; Schema: public; Owner: -\
+--\
+\
+COPY public.terms (id, organization_id, studio_location_id, name, start_date, end_date, is_active_for_planning, created_at, updated_at) FROM stdin;\
+\\.\
+\
+\
+--\
+-- Name: class_definitions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -\
+--\
+\
+SELECT pg_catalog.setval('public.class_definitions_id_seq', 1, false);\
+\
+\
+--\
+-- Name: class_session_requirements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -\
+--\
+\
+SELECT pg_catalog.setval('public.class_session_requirements_id_seq', 1, false);\
+\
+\
+--\
+-- Name: class_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -\
+--\
+\
+SELECT pg_catalog.setval('public.class_types_id_seq', 1, false);\
+\
+\
+--\
+-- Name: instructor_availability_slots_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -\
+--\
+\
+SELECT pg_catalog.setval('public.instructor_availability_slots_id_seq', 1, false);\
+\
+\
+--\
+-- Name: instructor_priority_requests_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -\
+--\
+\
+SELECT pg_catalog.setval('public.instructor_priority_requests_id_seq', 1, false);\
+\
+\
+--\
+-- Name: instructors_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -\
+--\
+\
+SELECT pg_catalog.setval('public.instructors_id_seq', 1, false);\
+\
+\
+--\
+-- Name: organizations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -\
+--\
+\
+SELECT pg_catalog.setval('public.organizations_id_seq', 1, false);\
+\
+\
+--\
+-- Name: room_operating_hours_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -\
+--\
+\
+SELECT pg_catalog.setval('public.room_operating_hours_id_seq', 1, false);\
+\
+\
+--\
+-- Name: rooms_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -\
+--\
+\
+SELECT pg_catalog.setval('public.rooms_id_seq', 1, false);\
+\
+\
+--\
+-- Name: scheduled_events_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -\
+--\
+\
+SELECT pg_catalog.setval('public.scheduled_events_id_seq', 1, false);\
+\
+\
+--\
+-- Name: studio_locations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -\
+--\
+\
+SELECT pg_catalog.setval('public.studio_locations_id_seq', 1, false);\
+\
+\
+--\
+-- Name: terms_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -\
+--\
+\
+SELECT pg_catalog.setval('public.terms_id_seq', 1, false);\
+\
+\
+--\
+-- Name: class_definitions class_definitions_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_definitions\
+    ADD CONSTRAINT class_definitions_pkey PRIMARY KEY (id);\
+\
+\
+--\
+-- Name: class_session_requirements class_session_requirements_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_session_requirements\
+    ADD CONSTRAINT class_session_requirements_pkey PRIMARY KEY (id);\
+\
+\
+--\
+-- Name: class_types class_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_types\
+    ADD CONSTRAINT class_types_pkey PRIMARY KEY (id);\
+\
+\
+--\
+-- Name: instructor_availability_slots instructor_availability_slots_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructor_availability_slots\
+    ADD CONSTRAINT instructor_availability_slots_pkey PRIMARY KEY (id);\
+\
+\
+--\
+-- Name: instructor_class_qualifications instructor_class_qualifications_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructor_class_qualifications\
+    ADD CONSTRAINT instructor_class_qualifications_pkey PRIMARY KEY (instructor_id, class_definition_id);\
+\
+\
+--\
+-- Name: instructor_priority_requests instructor_priority_requests_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructor_priority_requests\
+    ADD CONSTRAINT instructor_priority_requests_pkey PRIMARY KEY (id);\
+\
+\
+--\
+-- Name: instructors instructors_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructors\
+    ADD CONSTRAINT instructors_pkey PRIMARY KEY (id);\
+\
+\
+--\
+-- Name: organizations organizations_name_key; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.organizations\
+    ADD CONSTRAINT organizations_name_key UNIQUE (name);\
+\
+\
+--\
+-- Name: organizations organizations_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.organizations\
+    ADD CONSTRAINT organizations_pkey PRIMARY KEY (id);\
+\
+\
+--\
+-- Name: organizations organizations_subdomain_key; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.organizations\
+    ADD CONSTRAINT organizations_subdomain_key UNIQUE (subdomain);\
+\
+\
+--\
+-- Name: room_operating_hours room_operating_hours_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.room_operating_hours\
+    ADD CONSTRAINT room_operating_hours_pkey PRIMARY KEY (id);\
+\
+\
+--\
+-- Name: rooms rooms_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.rooms\
+    ADD CONSTRAINT rooms_pkey PRIMARY KEY (id);\
+\
+\
+--\
+-- Name: scheduled_events scheduled_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.scheduled_events\
+    ADD CONSTRAINT scheduled_events_pkey PRIMARY KEY (id);\
+\
+\
+--\
+-- Name: studio_locations studio_locations_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.studio_locations\
+    ADD CONSTRAINT studio_locations_pkey PRIMARY KEY (id);\
+\
+\
+--\
+-- Name: terms terms_pkey; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.terms\
+    ADD CONSTRAINT terms_pkey PRIMARY KEY (id);\
+\
+\
+--\
+-- Name: class_definitions uq_class_definitions_organization_code; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_definitions\
+    ADD CONSTRAINT uq_class_definitions_organization_code UNIQUE (organization_id, class_code);\
+\
+\
+--\
+-- Name: class_session_requirements uq_class_session_req; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_session_requirements\
+    ADD CONSTRAINT uq_class_session_req UNIQUE (term_id, class_definition_id, studio_location_id) DEFERRABLE INITIALLY DEFERRED;\
+\
+\
+--\
+-- Name: class_types uq_class_types_organization_name; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_types\
+    ADD CONSTRAINT uq_class_types_organization_name UNIQUE (organization_id, name);\
+\
+\
+--\
+-- Name: instructors uq_instructors_organization_email; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructors\
+    ADD CONSTRAINT uq_instructors_organization_email UNIQUE (organization_id, email);\
+\
+\
+--\
+-- Name: instructors uq_instructors_organization_name; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructors\
+    ADD CONSTRAINT uq_instructors_organization_name UNIQUE (organization_id, name);\
+\
+\
+--\
+-- Name: room_operating_hours uq_room_operating_hours_day; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.room_operating_hours\
+    ADD CONSTRAINT uq_room_operating_hours_day UNIQUE (room_id, day_of_week);\
+\
+\
+--\
+-- Name: rooms uq_rooms_location_name; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.rooms\
+    ADD CONSTRAINT uq_rooms_location_name UNIQUE (studio_location_id, name);\
+\
+\
+--\
+-- Name: studio_locations uq_studio_locations_organization_name; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.studio_locations\
+    ADD CONSTRAINT uq_studio_locations_organization_name UNIQUE (organization_id, name);\
+\
+\
+--\
+-- Name: terms uq_terms_org_location_name; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.terms\
+    ADD CONSTRAINT uq_terms_org_location_name UNIQUE (organization_id, studio_location_id, name) DEFERRABLE INITIALLY DEFERRED;\
+\
+\
+--\
+-- Name: terms uq_terms_org_name_null_location; Type: CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.terms\
+    ADD CONSTRAINT uq_terms_org_name_null_location UNIQUE (organization_id, name) DEFERRABLE INITIALLY DEFERRED;\
+\
+\
+--\
+-- Name: class_definitions set_timestamp_class_definitions; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_class_definitions BEFORE UPDATE ON public.class_definitions FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: class_session_requirements set_timestamp_class_session_requirements; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_class_session_requirements BEFORE UPDATE ON public.class_session_requirements FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: class_types set_timestamp_class_types; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_class_types BEFORE UPDATE ON public.class_types FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: instructor_availability_slots set_timestamp_instructor_availability_slots; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_instructor_availability_slots BEFORE UPDATE ON public.instructor_availability_slots FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: instructor_class_qualifications set_timestamp_instructor_class_qualifications; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_instructor_class_qualifications BEFORE UPDATE ON public.instructor_class_qualifications FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: instructor_priority_requests set_timestamp_instructor_priority_requests; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_instructor_priority_requests BEFORE UPDATE ON public.instructor_priority_requests FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: instructors set_timestamp_instructors; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_instructors BEFORE UPDATE ON public.instructors FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: organizations set_timestamp_organizations; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_organizations BEFORE UPDATE ON public.organizations FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: room_operating_hours set_timestamp_room_operating_hours; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_room_operating_hours BEFORE UPDATE ON public.room_operating_hours FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: rooms set_timestamp_rooms; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_rooms BEFORE UPDATE ON public.rooms FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: scheduled_events set_timestamp_scheduled_events; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_scheduled_events BEFORE UPDATE ON public.scheduled_events FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: studio_locations set_timestamp_studio_locations; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_studio_locations BEFORE UPDATE ON public.studio_locations FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: terms set_timestamp_terms; Type: TRIGGER; Schema: public; Owner: -\
+--\
+\
+CREATE TRIGGER set_timestamp_terms BEFORE UPDATE ON public.terms FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();\
+\
+\
+--\
+-- Name: class_definitions class_definitions_class_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_definitions\
+    ADD CONSTRAINT class_definitions_class_type_id_fkey FOREIGN KEY (class_type_id) REFERENCES public.class_types(id) ON DELETE RESTRICT;\
+\
+\
+--\
+-- Name: class_definitions class_definitions_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_definitions\
+    ADD CONSTRAINT class_definitions_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: class_session_requirements class_session_requirements_class_definition_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_session_requirements\
+    ADD CONSTRAINT class_session_requirements_class_definition_id_fkey FOREIGN KEY (class_definition_id) REFERENCES public.class_definitions(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: class_session_requirements class_session_requirements_studio_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_session_requirements\
+    ADD CONSTRAINT class_session_requirements_studio_location_id_fkey FOREIGN KEY (studio_location_id) REFERENCES public.studio_locations(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: class_session_requirements class_session_requirements_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_session_requirements\
+    ADD CONSTRAINT class_session_requirements_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.terms(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: class_types class_types_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.class_types\
+    ADD CONSTRAINT class_types_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: instructor_availability_slots instructor_availability_slots_instructor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructor_availability_slots\
+    ADD CONSTRAINT instructor_availability_slots_instructor_id_fkey FOREIGN KEY (instructor_id) REFERENCES public.instructors(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: instructor_availability_slots instructor_availability_slots_studio_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructor_availability_slots\
+    ADD CONSTRAINT instructor_availability_slots_studio_location_id_fkey FOREIGN KEY (studio_location_id) REFERENCES public.studio_locations(id) ON DELETE SET NULL;\
+\
+\
+--\
+-- Name: instructor_class_qualifications instructor_class_qualifications_class_definition_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructor_class_qualifications\
+    ADD CONSTRAINT instructor_class_qualifications_class_definition_id_fkey FOREIGN KEY (class_definition_id) REFERENCES public.class_definitions(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: instructor_class_qualifications instructor_class_qualifications_instructor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructor_class_qualifications\
+    ADD CONSTRAINT instructor_class_qualifications_instructor_id_fkey FOREIGN KEY (instructor_id) REFERENCES public.instructors(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: instructor_priority_requests instructor_priority_requests_instructor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructor_priority_requests\
+    ADD CONSTRAINT instructor_priority_requests_instructor_id_fkey FOREIGN KEY (instructor_id) REFERENCES public.instructors(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: instructor_priority_requests instructor_priority_requests_studio_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructor_priority_requests\
+    ADD CONSTRAINT instructor_priority_requests_studio_location_id_fkey FOREIGN KEY (studio_location_id) REFERENCES public.studio_locations(id) ON DELETE SET NULL;\
+\
+\
+--\
+-- Name: instructor_priority_requests instructor_priority_requests_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructor_priority_requests\
+    ADD CONSTRAINT instructor_priority_requests_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.terms(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: instructors instructors_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.instructors\
+    ADD CONSTRAINT instructors_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: room_operating_hours room_operating_hours_room_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.room_operating_hours\
+    ADD CONSTRAINT room_operating_hours_room_id_fkey FOREIGN KEY (room_id) REFERENCES public.rooms(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: rooms rooms_studio_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.rooms\
+    ADD CONSTRAINT rooms_studio_location_id_fkey FOREIGN KEY (studio_location_id) REFERENCES public.studio_locations(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: scheduled_events scheduled_events_class_definition_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.scheduled_events\
+    ADD CONSTRAINT scheduled_events_class_definition_id_fkey FOREIGN KEY (class_definition_id) REFERENCES public.class_definitions(id) ON DELETE SET NULL;\
+\
+\
+--\
+-- Name: scheduled_events scheduled_events_class_session_requirement_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.scheduled_events\
+    ADD CONSTRAINT scheduled_events_class_session_requirement_id_fkey FOREIGN KEY (class_session_requirement_id) REFERENCES public.class_session_requirements(id) ON DELETE SET NULL;\
+\
+\
+--\
+-- Name: scheduled_events scheduled_events_instructor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.scheduled_events\
+    ADD CONSTRAINT scheduled_events_instructor_id_fkey FOREIGN KEY (instructor_id) REFERENCES public.instructors(id) ON DELETE RESTRICT;\
+\
+\
+--\
+-- Name: scheduled_events scheduled_events_instructor_priority_request_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.scheduled_events\
+    ADD CONSTRAINT scheduled_events_instructor_priority_request_id_fkey FOREIGN KEY (instructor_priority_request_id) REFERENCES public.instructor_priority_requests(id) ON DELETE SET NULL;\
+\
+\
+--\
+-- Name: scheduled_events scheduled_events_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.scheduled_events\
+    ADD CONSTRAINT scheduled_events_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: scheduled_events scheduled_events_room_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.scheduled_events\
+    ADD CONSTRAINT scheduled_events_room_id_fkey FOREIGN KEY (room_id) REFERENCES public.rooms(id) ON DELETE RESTRICT;\
+\
+\
+--\
+-- Name: scheduled_events scheduled_events_studio_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.scheduled_events\
+    ADD CONSTRAINT scheduled_events_studio_location_id_fkey FOREIGN KEY (studio_location_id) REFERENCES public.studio_locations(id) ON DELETE RESTRICT;\
+\
+\
+--\
+-- Name: scheduled_events scheduled_events_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.scheduled_events\
+    ADD CONSTRAINT scheduled_events_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.terms(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: studio_locations studio_locations_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.studio_locations\
+    ADD CONSTRAINT studio_locations_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: terms terms_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.terms\
+    ADD CONSTRAINT terms_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: terms terms_studio_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -\
+--\
+\
+ALTER TABLE ONLY public.terms\
+    ADD CONSTRAINT terms_studio_location_id_fkey FOREIGN KEY (studio_location_id) REFERENCES public.studio_locations(id) ON DELETE CASCADE;\
+\
+\
+--\
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: -\
+--\
+\
+GRANT ALL ON SCHEMA public TO cloudsqlsuperuser;\
+\
+\
+--\
+-- PostgreSQL database dump complete\
+--\
+}
