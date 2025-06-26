@@ -1,0 +1,10 @@
+[
+  { "instructor": "Ava",      "priority": 1, "blockLengthHours": 3 },
+  { "instructor": "Liam",     "priority": 2, "blockLengthHours": 2 },
+  { "instructor": "Noah",     "priority": 3, "blockLengthHours": 1 },
+  { "instructor": "Mia",      "priority": 3, "blockLengthHours": 1 },
+  { "instructor": "Olivia",   "priority": 3, "blockLengthHours": 1 },
+  { "instructor": "Elijah",   "priority": 3, "blockLengthHours": 1 },
+  { "instructor": "Isabella", "priority": 3, "blockLengthHours": 1 },
+  { "instructor": "Lucas",    "priority": 3, "blockLengthHours": 1 }
+]

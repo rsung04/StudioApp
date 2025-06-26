@@ -1,0 +1,10 @@
+[
+  {"instructor": "Ava",      "rating": 4.8},
+  {"instructor": "Liam",     "rating": 4.2},
+  {"instructor": "Noah",     "rating": 4.6},
+  {"instructor": "Olivia",   "rating": 4.4},
+  {"instructor": "Mia",      "rating": 4.7},
+  {"instructor": "Elijah",   "rating": 4.0},
+  {"instructor": "Isabella", "rating": 4.3},
+  {"instructor": "Lucas",    "rating": 3.9}
+]

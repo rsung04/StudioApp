@@ -1,0 +1,24 @@
+[
+    {"classId":"intro_to_basework","sessionsPerWeek":1},
+    {"classId":"intro_to_rique_pole_choreo","sessionsPerWeek":1},
+  
+    {"classId":"pre_adv_adv_pole_tricks","sessionsPerWeek":1},
+    {"classId":"adv_xo_pole_choreo","sessionsPerWeek":1},
+    {"classId":"intro_to_pre_adv_pole_tricks","sessionsPerWeek":1},
+    {"classId":"all_things_static_inter","sessionsPerWeek":1},
+  
+    {"classId":"inter_2_aerial_tricks","sessionsPerWeek":2},
+    {"classId":"inter_1_aerial_tricks","sessionsPerWeek":1},
+  
+    {"classId":"elementary_aerial_tricks","sessionsPerWeek":2},
+    {"classId":"inter_2_aerial_routine","sessionsPerWeek":1},
+    {"classId":"inter_3_aerial_routine","sessionsPerWeek":1},
+  
+    {"classId":"handstand_acro_and_floor_tricks","sessionsPerWeek":1},
+  
+    {"classId":"silky_pole_choreo","sessionsPerWeek":2},
+    {"classId":"freaky_floor_choreo","sessionsPerWeek":1},
+    {"classId":"hardcore_pole_choreo","sessionsPerWeek":1},
+    {"classId":"inter_3_pole_tricks","sessionsPerWeek":1},
+    {"classId":"bend_it_like_mucci","sessionsPerWeek":1}
+  ]

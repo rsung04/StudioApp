@@ -1,0 +1,122 @@
+{
+  "slotMinutes": 5,
+  "defaultClassDurationHours": 1, // Or remove if all class durations are explicit in "classes" list
+  "termWeeks": 1,
+  "rooms": [
+    {
+      "id": "room1",
+      "name": "Front Room", // Added a descriptive name
+      "capacity": 30,
+      "dailyOperatingHours": {
+        "MONDAY":    { "startTime": "16:30", "endTime": "22:00" },
+        "TUESDAY":   { "startTime": "16:30", "endTime": "22:00" },
+        "WEDNESDAY": { "startTime": "16:30", "endTime": "22:00" },
+        "THURSDAY":  { "startTime": "16:30", "endTime": "22:00" },
+        "FRIDAY":    { "startTime": "16:30", "endTime": "22:00" },
+        "SATURDAY":  { "startTime": "09:30", "endTime": "22:00" },
+        "SUNDAY":    { "startTime": "09:30", "endTime": "22:00" }
+      }
+    },
+    {
+      "id": "room2",
+      "name": "Back Room", // Added a descriptive name
+      "capacity": 20,
+      "dailyOperatingHours": {
+        "MONDAY":    { "startTime": "16:30", "endTime": "22:00" },
+        "TUESDAY":   { "startTime": "16:30", "endTime": "22:00" },
+        "WEDNESDAY": { "startTime": "16:30", "endTime": "22:00" },
+        "THURSDAY":  { "startTime": "16:30", "endTime": "22:00" },
+        "FRIDAY":    { "startTime": "16:30", "endTime": "22:00" },
+        "SATURDAY":  { "startTime": "09:30", "endTime": "22:00" },
+        "SUNDAY":    { "startTime": "09:30", "endTime": "22:00" }
+      }
+    }
+  ],
+  "instructors": [
+    {
+      "id": "instructor1",
+      "name": "Instructor 1",
+      "isHighPriority": true, // Added based on PRD concept, adjust as needed
+      "availability": [ // Availability remains per instructor
+        {"day": "MONDAY", "startTime": "09:00", "endTime": "12:00"}, // Using startTime/endTime for clarity
+        {"day": "WEDNESDAY", "startTime": "09:00", "endTime": "11:00"}
+      ]
+    },
+    {
+      "id": "instructor2",
+      "name": "Instructor 2",
+      "isHighPriority": false,
+      "availability": [
+        {"day": "TUESDAY", "startTime": "10:00", "endTime": "14:00"}
+      ]
+    },
+    {
+      "id": "instructor3",
+      "name": "Instructor 3",
+      "isHighPriority": false,
+      "availability": [
+        {"day": "THURSDAY", "startTime": "13:00", "endTime": "16:00"}
+      ]
+    },
+    {
+      "id": "instructor4",
+      "name": "Instructor 4",
+      "isHighPriority": true,
+      "availability": [
+        {"day": "FRIDAY", "startTime": "14:00", "endTime": "18:00"}
+      ]
+    }
+  ],
+  "classesToSchedule": [ // Renamed from "classes" to be more explicit about its purpose
+    {
+      "classId": "class1_session1", // Unique ID for this scheduling request
+      "classTypeRef": "Pole-Beginner", // Link to a (yet undefined) class catalog for type, difficulty etc.
+      "name": "Beginner Pole with Instructor 1", // More descriptive name for this instance
+      "assignedInstructorId": "instructor1",
+      "assignedRoomId": "room1", // Assuming classes are pre-assigned to rooms for now
+      "durationHours": 2,
+      "isPriorityLock": false, // Flag for Stage A vs Stage B
+      "blockRequest": null // or { "consecutiveHours": 3, "isOptional": true } for priority instructors
+    },
+    {
+      "classId": "class2_session1",
+      "classTypeRef": "Heels-Open",
+      "name": "Open Heels with Instructor 2",
+      "assignedInstructorId": "instructor2",
+      "assignedRoomId": "room2",
+      "durationHours": 1,
+      "isPriorityLock": false,
+      "blockRequest": null
+    },
+    {
+      "classId": "class3_session1",
+      "classTypeRef": "Stretch-AllLevels",
+      "name": "Stretch with Instructor 3",
+      "assignedInstructorId": "instructor3",
+      "assignedRoomId": "room1",
+      "durationHours": 1,
+      "isPriorityLock": false,
+      "blockRequest": null
+    },
+    {
+      "classId": "class4_session1",
+      "classTypeRef": "Pole-Intermediate",
+      "name": "Intermediate Pole with Instructor 4",
+      "assignedInstructorId": "instructor4",
+      "assignedRoomId": "room1",
+      "durationHours": 1,
+      "isPriorityLock": true, // Example of a class instance that should be treated as priority locked
+      "blockRequest": { "consecutiveHours": 1, "isOptional": false } // If it's a priority lock, it's not optional in Stage A
+    },
+    { // Example of a priority instructor's block request for Stage A
+      "classId": "paige_priority_block1",
+      "classTypeRef": "Pole-Block", // Generic type for block
+      "name": "Paige's 3hr Pole Block",
+      "assignedInstructorId": "instructor1", // Example: Instructor 1 is Paige
+      "assignedRoomId": null, // Room could be a decision for the solver, or pre-assigned
+      "durationHours": null, // Not used if blockRequest is present
+      "isPriorityLock": false, // Not yet locked, this IS the request for Stage A
+      "blockRequest": { "consecutiveHours": 3, "isOptional": true, "numPerWeek": 1 } // Stage A will try to place this
+    }
+  ]
+}

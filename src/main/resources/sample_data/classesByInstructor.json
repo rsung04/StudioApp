@@ -1,0 +1,37 @@
+{
+  "classesByInstructor": {
+    "Ava": [
+      "intro_to_basework",
+      "inter_2_aerial_tricks",
+      "bend_it_like_mucci"
+    ],
+    "Liam": [
+      "adv_xo_pole_choreo",
+      "elementary_aerial_tricks"
+    ],
+    "Noah": [
+      "intro_to_pre_adv_pole_tricks",
+      "hardcore_pole_choreo",
+      "handstand_acro_and_floor_tricks"
+    ],
+    "Olivia": [
+      "silky_pole_choreo",
+      "inter_3_aerial_routine"
+    ],
+    "Mia": [
+      "pre_adv_adv_pole_tricks",
+      "freaky_floor_choreo"
+    ],
+    "Elijah": [
+      "inter_1_aerial_tricks",
+      "intro_to_rique_pole_choreo"
+    ],
+    "Isabella": [
+      "inter_2_aerial_routine",
+      "inter_3_pole_tricks"
+    ],
+    "Lucas": [
+      "all_things_static_inter"
+    ]
+  }
+}
