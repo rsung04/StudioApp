@@ -1,0 +1,211 @@
+# E9 Handover: StudioApp API & Solver Service
+
+**Objective:** This document provides a comprehensive technical overview, codebase analysis, and deployment plan for the `studioapp-api` and `solver-service`. It is intended for a senior engineer to take ownership of the project, complete its implementation, and manage its lifecycle on Google Cloud Platform.
+
+---
+
+## 1. System Architecture & Strategy
+
+The system is a decoupled, two-service application designed for asynchronous processing of complex scheduling tasks.
+
+*   **`studioapp-api` (Main API):** A public-facing Spring Boot application responsible for all standard data management (CRUD operations on instructors, classes, rooms, etc.). It exposes a REST API for clients. When a schedule needs to be generated, this service does **not** perform the calculation. Instead, it serializes a request and publishes it to a GCP Pub/Sub topic.
+
+*   **`solver-service` (Worker Service):** A non-public Spring Boot application that acts as a background worker. It subscribes to the GCP Pub/Sub topic. Upon receiving a message, it deserializes the request, fetches all required data from the central Cloud SQL database, executes the Google OR-Tools CP-SAT solver, and persists the generated schedule back to the database.
+
+**Rationale:** This asynchronous architecture ensures the main API remains highly available and responsive. Solver jobs can take significant time (minutes to hours), and offloading them to a separate service prevents API timeouts and allows for independent scaling of the worker service based on load.
+
+---
+
+## 2. Codebase Deep Dive
+
+### 2.1. Main Service: `studioapp-api`
+
+Located in the project root, this is a standard Spring Boot application.
+
+#### Key Packages:
+
+*   `com.example.studioapp_api.entity`: Contains the JPA entities that map directly to PostgreSQL tables (e.g., `Instructor`, `ClassDefinition`, `Room`). These are the source of truth for the data model.
+*   `com.example.studioapp_api.repository`: Holds the Spring Data JPA repositories. These interfaces provide the data access layer, abstracting away database queries (e.g., `InstructorRepository`, `TermRepository`).
+*   `com.example.studioapp_api.service`: The business logic layer. Services (e.g., `InstructorService`, `SolverService`) orchestrate operations, calling repositories to interact with the database and performing necessary transformations. The `SolverServiceImpl` is responsible for mapping internal data to the `PubSubSolveRequest` and publishing it.
+*   `com.example.studioapp_api.controller`: The API layer. These REST controllers (e.g., `InstructorController`, `SolverController`) define the public-facing endpoints, handle HTTP requests, and perform request/response serialization using DTOs.
+*   `com.example.studioapp_api.dto`: Data Transfer Objects. These are plain Java objects used to shape the data for API requests and responses, decoupling the API contract from the internal database schema. For example, `InstructorRequestDTO` is used for creating an instructor, while `InstructorResponseDTO` is returned.
+*   `com.example.studioapp_api.solver`: **(Legacy)** This package contains the original, file-based `DanceTimetableSolver.java`. While it holds the core constraint-solving logic, it is **not directly used** by the deployed application. It serves as a critical reference for the logic that must be implemented in the `solver-service`.
+
+### 2.2. Worker Service: `solver-service`
+
+Located in the `solver-service/` directory, this is a separate, focused Spring Boot application.
+
+#### Key Packages:
+
+*   `com.example.solverservice.controller`: Contains the `SolverController` which, in the current implementation, is likely minimal. The primary entry point for this service is the Pub/Sub message handler, not a traditional REST API.
+*   `com.example.solverservice.service`: 
+    *   `PubSubMessageHandler`: This is the core of the worker. It contains the method annotated to handle incoming Pub/Sub messages. This method will trigger the solving process.
+    *   `JobStoreService`: A utility service that might be used to track the state of solver jobs in the database (e.g., PENDING, RUNNING, COMPLETED, FAILED).
+*   `com.example.solverservice.solver`: This is where the refactored solver logic resides. `DanceTimetableSolver.java` from the main API will be adapted here to:
+    1.  Accept a `SolverInput` object (built from the Pub/Sub message).
+    2.  Fetch all necessary data from the database using injected repositories.
+    3.  Run the OR-Tools CP-SAT model.
+    4.  Return a `SolverOutput` object containing the results.
+*   `com.example.solverservice.model`: Contains the data structures for the solver's input and output (`SolverInput`, `SolverOutput`, etc.), which are constructed from the database entities.
+
+---
+
+## 3. API Specification & Interaction Flow
+
+The primary interaction for triggering the solver involves the `studioapp-api`.
+
+### 3.1. Triggering a Solver Job
+
+**Endpoint:** `POST /api/v1/solver/run`
+**Host:** The Cloud Run URL of the `studioapp-api` service.
+
+This endpoint initiates a new timetable generation request.
+
+#### Request Body (`SolveRequestDTO.java`):
+
+```json
+{
+  "termId": 1,
+  "organizationId": 1,
+  "studioLocationId": 1,
+  "lockedBlocks": [
+    {
+      "dayOfWeek": "MONDAY",
+      "startHour": 9,
+      "startMinute": 0,
+      "endHour": 10,
+      "endMinute": 0,
+      "instructorId": 101,
+      "roomId": 201
+    }
+  ]
+}
+```
+
+*   `termId`: The ID of the term for which to generate the schedule.
+*   `organizationId`: The scope of the request.
+*   `studioLocationId`: (Optional) Narrows the scope to a specific location.
+*   `lockedBlocks`: (Optional) A list of pre-assigned blocks that the solver must respect and schedule around.
+
+#### Success Response (HTTP 202 Accepted):
+
+The API should immediately return a `202 Accepted` status code. This indicates the request has been successfully queued for processing, but is not yet complete.
+
+```json
+{
+  "jobId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "status": "QUEUED",
+  "message": "Solver job has been successfully queued. You can track its status using the provided jobId."
+}
+```
+
+*   `jobId`: A unique identifier for the solver job. This can be used to query the job's status.
+
+#### Error Responses:
+
+*   **HTTP 400 Bad Request:** If the request DTO fails validation (e.g., missing `termId`).
+*   **HTTP 404 Not Found:** If the specified `termId` or `organizationId` does not exist.
+
+### 3.2. Checking Solver Job Status (To Be Implemented)
+
+A new endpoint is required to allow clients to poll for the status of a job.
+
+**Endpoint:** `GET /api/v1/solver/status/{jobId}`
+
+#### Success Response (HTTP 200 OK):
+
+```json
+{
+  "jobId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "status": "COMPLETED",
+  "createdAt": "2025-07-08T10:00:00Z",
+  "completedAt": "2025-07-08T10:05:00Z",
+  "resultsUrl": "/api/v1/terms/1/schedule"
+}
+```
+*   `status`: Can be `QUEUED`, `RUNNING`, `COMPLETED`, or `FAILED`.
+*   `resultsUrl`: If completed, a link to the API endpoint where the generated schedule can be viewed.
+
+---
+
+## 4. Deployment Plan (Actionable Steps)
+
+This section outlines the concrete commands and configurations needed to get the system live on GCP.
+
+### 4.1. Code & Configuration Readiness
+
+1.  **Update `studioapp-api` Pub/Sub Config:**
+    *   In `src/main/resources/application.properties`, set `solver.gcp.topic-id=projects/polestudiowebapp/topics/solver-requests`.
+
+2.  **Create and Configure `solver-service` Properties:**
+    *   Create `solver-service/src/main/resources/application.properties`.
+    *   Add `spring.jpa.hibernate.ddl-auto=validate`, `spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect`, and `solver.gcp.subscription-id=projects/polestudiowebapp/subscriptions/solver-requests-sub`.
+
+3.  **Dockerize `studioapp-api`:**
+    *   Create a `Dockerfile` in the project root with the content provided in the previous version of this document.
+
+### 4.2. GCP Resource Setup
+
+Execute the following `gcloud` commands:
+
+```bash
+# 1. Create Pub/Sub Topic & Subscription
+gcloud pubsub topics create solver-requests --project=polestudiowebapp
+gcloud pubsub subscriptions create solver-requests-sub --topic=solver-requests --project=polestudiowebapp
+
+# 2. Enable and Create Artifact Registry
+gcloud services enable artifactregistry.googleapis.com --project=polestudiowebapp
+gcloud artifacts repositories create studioapp-repo --repository-format=docker --location=australia-southeast1 --project=polestudiowebapp
+
+# 3. Create and Configure IAM Service Account
+gcloud iam service-accounts create studioapp-runner --project=polestudiowebapp
+gcloud projects add-iam-policy-binding polestudiowebapp --member="serviceAccount:studioapp-runner@polestudiowebapp.iam.gserviceaccount.com" --role="roles/cloudsql.client"
+gcloud projects add-iam-policy-binding polestudiowebapp --member="serviceAccount:studioapp-runner@polestudiowebapp.iam.gserviceaccount.com" --role="roles/pubsub.publisher"
+gcloud projects add-iam-policy-binding polestudiowebapp --member="serviceAccount:studioapp-runner@polestudiowebapp.iam.gserviceaccount.com" --role="roles/pubsub.subscriber"
+```
+
+### 4.3. Build & Deploy
+
+Execute the following `docker` and `gcloud` commands:
+
+```bash
+# 1. Authenticate Docker
+gcloud auth configure-docker australia-southeast1-docker.pkg.dev
+
+# 2. Build and Push studioapp-api
+docker build -t australia-southeast1-docker.pkg.dev/polestudiowebapp/studioapp-repo/studioapp-api:latest .
+docker push australia-southeast1-docker.pkg.dev/polestudiowebapp/studioapp-repo/studioapp-api:latest
+
+# 3. Build and Push solver-service
+cd solver-service
+docker build -t australia-southeast1-docker.pkg.dev/polestudiowebapp/studioapp-repo/solver-service:latest .
+docker push australia-southeast1-docker.pkg.dev/polestudiowebapp/studioapp-repo/solver-service:latest
+cd ..
+
+# 4. Deploy studioapp-api to Cloud Run
+gcloud run deploy studioapp-api \
+    --image=australia-southeast1-docker.pkg.dev/polestudiowebapp/studioapp-repo/studioapp-api:latest \
+    --platform=managed --region=australia-southeast1 \
+    --service-account=studioapp-runner@polestudiowebapp.iam.gserviceaccount.com \
+    --add-cloudsql-instances=polestudiowebapp:australia-southeast1:studioapp-db \
+    --allow-unauthenticated \
+    --set-env-vars="spring.datasource.username=postgres,spring.datasource.password=Sandals123!@#,spring.datasource.url=jdbc:postgresql://google/postgres?socketFactory=com.google.cloud.sql.postgres.SocketFactory&cloudSqlInstance=polestudiowebapp:australia-southeast1:studioapp-db"
+
+# 5. Deploy solver-service to Cloud Run
+gcloud run deploy solver-service \
+    --image=australia-southeast1-docker.pkg.dev/polestudiowebapp/studioapp-repo/solver-service:latest \
+    --platform=managed --region=australia-southeast1 \
+    --service-account=studioapp-runner@polestudiowebapp.iam.gserviceaccount.com \
+    --add-cloudsql-instances=polestudiowebapp:australia-southeast1:studioapp-db \
+    --no-allow-unauthenticated \
+    --set-env-vars="spring.datasource.username=postgres,spring.datasource.password=Sandals123!@#,spring.datasource.url=jdbc:postgresql://google/postgres?socketFactory=com.google.cloud.sql.postgres.SocketFactory&cloudSqlInstance=polestudiowebapp:australia-southeast1:studioapp-db"
+```
+
+---
+
+## 5. Verification and Next Steps
+
+1.  **Trigger the Solver:** Use a tool like Postman or `curl` to send a `POST` request to the `studioapp-api`'s `/api/v1/solver/run` endpoint.
+2.  **Monitor Logs:** Observe the logs for both services in the GCP console. You should see the main API publishing the message and the solver service receiving and processing it.
+3.  **Verify Database:** Check the `scheduled_events` table (or equivalent) to confirm the new schedule has been written.
+4.  **Implement Status Endpoint:** The immediate next development task is to build the `GET /api/v1/solver/status/{jobId}` endpoint to provide feedback to the client.

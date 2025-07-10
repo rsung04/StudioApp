@@ -1,0 +1,4 @@
+2025/06/27 13:34:48 Authorizing with Application Default Credentials
+2025/06/27 13:34:49 [polestudiowebapp:australia-southeast1:studioapp-db] Listening on 127.0.0.1:5432
+2025/06/27 13:34:49 The proxy has started successfully and is ready for new connections!
+2025/06/27 13:39:07 SIGTERM signal received. Shutting down...

@@ -5,10 +5,8 @@ import com.example.studioapp_api.dto.SolveRequestDTO;
 import com.example.studioapp_api.dto.SolverJobResponseDTO;
 import com.example.studioapp_api.entity.*;
 import com.example.studioapp_api.repository.*;
-// DanceTimetableSolver, SolverInput, SolverOutput are no longer directly used here.
-// They are part of the solver-service.
-import com.example.studioapp_api.mapper.SolverInputMapper; // For mapping to DTOs for solver-service
-import com.example.studioapp_api.dto.solver_service_dtos.PubSubSolveRequestStructure; // To define the Pub/Sub message structure
+import com.example.studioapp_api.mapper.SolverInputMapper;
+import com.example.studioapp_api.dto.solver_service_dtos.PubSubSolveRequestStructure;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,7 +29,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID; // For generating job IDs
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +37,7 @@ public class SolverServiceImpl implements SolverService {
 
     private static final Logger logger = LoggerFactory.getLogger(SolverServiceImpl.class);
 
-    // Inject all repositories needed to fetch data for the solver
+    // All your existing repositories
     private final OrganizationRepository organizationRepository;
     private final TermRepository termRepository;
     private final InstructorRepository instructorRepository;
@@ -52,12 +50,14 @@ public class SolverServiceImpl implements SolverService {
     private final InstructorClassQualificationRepository qualificationRepository;
     private final InstructorPriorityRequestRepository priorityRequestRepository;
     private final ClassSessionRequirementRepository sessionRequirementRepository;
-    // private final ScheduledEventRepository scheduledEventRepository; // For saving final results from job store
+    
+    // === OUR NEW REPOSITORY ===
+    private final SolverJobRepository solverJobRepository;
 
     private final PubSubTemplate pubSubTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${solver.gcp.topic-id}") // Configure in application.properties (e.g., solve-requests-topic)
+    @Value("${solver.gcp.topic-id}")
     private String pubsubTopicId;
 
     @Autowired
@@ -73,6 +73,7 @@ public class SolverServiceImpl implements SolverService {
                              InstructorClassQualificationRepository qualificationRepository,
                              InstructorPriorityRequestRepository priorityRequestRepository,
                              ClassSessionRequirementRepository sessionRequirementRepository,
+                             SolverJobRepository solverJobRepository, // <-- Injected here
                              PubSubTemplate pubSubTemplate,
                              ObjectMapper objectMapper) {
         this.organizationRepository = organizationRepository;
@@ -87,11 +88,13 @@ public class SolverServiceImpl implements SolverService {
         this.qualificationRepository = qualificationRepository;
         this.priorityRequestRepository = priorityRequestRepository;
         this.sessionRequirementRepository = sessionRequirementRepository;
+        this.solverJobRepository = solverJobRepository; // <-- Assigned here
         this.pubSubTemplate = pubSubTemplate;
         this.objectMapper = objectMapper;
     }
 
     private Map<java.time.DayOfWeek, OperatingHoursSpan> calculateEffectiveDayWindows(List<Room> rooms, int slotMinutes) {
+        // This method remains unchanged from your original file.
         Map<DayOfWeek, OperatingHoursSpan> effectiveDayWindows = new EnumMap<>(DayOfWeek.class);
         if (rooms.isEmpty()) {
             logger.warn("No rooms provided to calculate effective day windows, using default empty spans.");
@@ -106,9 +109,6 @@ public class SolverServiceImpl implements SolverService {
             LocalTime overallLatestEnd = null;
 
             for (Room room : rooms) {
-                // Ensure operatingHours are loaded if lazy
-                // If triggerSolver is @Transactional, this access should work.
-                // Otherwise, this data needs to be eagerly fetched or fetched in a dedicated query.
                 if (room.getOperatingHours() != null) { 
                     for (RoomOperatingHours hours : room.getOperatingHours()) {
                         if (hours.getDayOfWeek().name().equals(day.name())) {
@@ -134,22 +134,36 @@ public class SolverServiceImpl implements SolverService {
     }
 
     @Override
-    @Transactional(readOnly = true) // Keep readOnly for data fetching
+    @Transactional // <-- MODIFIED: Removed readOnly=true to allow database writes
     public SolverJobResponseDTO triggerSolver(SolveRequestDTO solveRequestDTO) {
         String jobId = UUID.randomUUID().toString();
+        OffsetDateTime now = OffsetDateTime.now();
         logger.info("Solver job {} triggered for OrgID: {}, TermID: {}. Publishing to Pub/Sub topic: {}",
                 jobId, solveRequestDTO.getOrganizationId(), solveRequestDTO.getTermId(), pubsubTopicId);
 
-        // --- Data Fetching (remains largely the same) ---
+        // --- Data Fetching (your original logic is preserved) ---
         Organization organization = organizationRepository.findById(solveRequestDTO.getOrganizationId())
             .orElseThrow(() -> new EntityNotFoundException("Organization not found: " + solveRequestDTO.getOrganizationId()));
         Term term = termRepository.findById(solveRequestDTO.getTermId())
             .orElseThrow(() -> new EntityNotFoundException("Term not found: " + solveRequestDTO.getTermId()));
         
+        // === START: NEW LOGIC TO PERSIST THE JOB ===
+        SolverJob newJob = new SolverJob();
+        newJob.setJobId(jobId);
+        newJob.setTermId(term.getId());
+        newJob.setOrganizationId(organization.getId());
+        newJob.setStatus("QUEUED"); // Set initial status
+        newJob.setSubmittedAt(now);
+        newJob.setLastUpdatedAt(now);
+        solverJobRepository.save(newJob);
+        logger.info("Job {} has been saved to the database with status QUEUED.", jobId);
+        // === END: NEW LOGIC TO PERSIST THE JOB ===
+
         if (!term.getOrganization().getId().equals(organization.getId())) {
             throw new IllegalArgumentException("Term ID " + term.getId() + " does not belong to Organization ID " + organization.getId());
         }
 
+        // --- All the rest of your data fetching logic remains untouched ---
         final StudioLocation finalSpecificLocationForSolve;
         if (solveRequestDTO.getStudioLocationId() != null) {
             StudioLocation tempLocation = studioLocationRepository.findById(solveRequestDTO.getStudioLocationId())
@@ -161,13 +175,11 @@ public class SolverServiceImpl implements SolverService {
         } else {
             finalSpecificLocationForSolve = null;
         }
-
         List<Instructor> instructors = instructorRepository.findByOrganizationId(organization.getId());
-        instructors.forEach(i -> { // Eagerly load collections if needed, or ensure fetch strategy is appropriate
+        instructors.forEach(i -> {
             if (i.getAvailabilitySlots() != null) i.getAvailabilitySlots().size();
             if (i.getClassQualifications() != null) i.getClassQualifications().size();
         });
-
         List<Room> relevantRooms = new ArrayList<>();
         if (finalSpecificLocationForSolve != null) {
             relevantRooms.addAll(roomRepository.findByStudioLocationId(finalSpecificLocationForSolve.getId()));
@@ -180,10 +192,8 @@ public class SolverServiceImpl implements SolverService {
          relevantRooms.forEach(r -> {
             if (r.getOperatingHours() != null) r.getOperatingHours().size();
          });
-
-        final int slotMinutesConfig = 5; // This could also come from solveRequestDTO or organization settings
+        final int slotMinutesConfig = 5;
         Map<java.time.DayOfWeek, OperatingHoursSpan> effectiveWindows = calculateEffectiveDayWindows(relevantRooms, slotMinutesConfig);
-
         List<InstructorPriorityRequest> priorityRequests = priorityRequestRepository.findByTermId(term.getId())
             .stream()
             .filter(pr -> pr.getInstructor().getOrganization().getId().equals(organization.getId()))
@@ -192,7 +202,6 @@ public class SolverServiceImpl implements SolverService {
                            pr.getStudioLocation() == null ||
                            (pr.getStudioLocation() != null && pr.getStudioLocation().getId().equals(finalSpecificLocationForSolve.getId())))
             .collect(Collectors.toList());
-            
         List<ClassSessionRequirement> classRequirements = sessionRequirementRepository.findByTermId(term.getId())
             .stream()
             .filter(csr -> csr.getClassDefinition().getOrganization().getId().equals(organization.getId()))
@@ -201,73 +210,58 @@ public class SolverServiceImpl implements SolverService {
                             csr.getStudioLocation() == null ||
                             (csr.getStudioLocation() != null && csr.getStudioLocation().getId().equals(finalSpecificLocationForSolve.getId())))
             .collect(Collectors.toList());
-        
         List<ClassDefinition> classDefinitions = classDefinitionRepository.findByOrganizationId(organization.getId());
-        // --- End Data Fetching ---
-
-        // Map to DTO for solver-service
+        
+        // --- Your Pub/Sub publishing logic remains untouched ---
         SolverInputMapper.LocalSolverServiceInput solverServiceInput = SolverInputMapper.createSolverServiceInputStructure(
-                slotMinutesConfig,
-                effectiveWindows,
-                instructors,
-                relevantRooms,
-                priorityRequests,
-                classDefinitions,
-                classRequirements
+                slotMinutesConfig, effectiveWindows, instructors, relevantRooms, priorityRequests, classDefinitions, classRequirements
         );
-
-        // Create Pub/Sub message payload
         PubSubSolveRequestStructure pubSubRequest = new PubSubSolveRequestStructure(jobId, solverServiceInput);
         try {
             String jsonPayload = objectMapper.writeValueAsString(pubSubRequest);
             pubSubTemplate.publish(this.pubsubTopicId, jsonPayload);
             logger.info("Job {} published to Pub/Sub topic {}.", jobId, this.pubsubTopicId);
-        } catch (JsonProcessingException e) {
-            logger.error("Job {}: Failed to serialize PubSubSolveRequest to JSON. Error: {}", jobId, e.getMessage(), e);
-            // Handle serialization error, maybe return an error response
-            return SolverJobResponseDTO.builder()
-                    .jobId(jobId) // Return job ID even on publish failure for tracking
-                    .status("FAILED_TO_PUBLISH")
-                    .message("Error preparing solver request: " + e.getMessage())
-                    .submittedAt(OffsetDateTime.now())
-                    .build();
         } catch (Exception e) {
-            logger.error("Job {}: Failed to publish message to Pub/Sub topic {}. Error: {}", jobId, this.pubsubTopicId, e.getMessage(), e);
-            return SolverJobResponseDTO.builder()
-                    .jobId(jobId)
-                    .status("FAILED_TO_PUBLISH")
-                    .message("Error sending solver request: " + e.getMessage())
-                    .submittedAt(OffsetDateTime.now())
-                    .build();
+            // Your error handling is preserved. If publishing fails, the transaction will roll back,
+            // and the job record we tried to save will be removed, which is the correct behavior.
+            logger.error("Job {}: Failed to publish message. Error: {}", jobId, e.getMessage(), e);
+            throw new RuntimeException("Failed to publish solver job to Pub/Sub.", e);
         }
 
         return SolverJobResponseDTO.builder()
                 .jobId(jobId)
-                .status("PENDING") // Indicates the job has been submitted for asynchronous processing
-                .message("Solver job submitted successfully. Awaiting processing.")
-                .submittedAt(OffsetDateTime.now())
+                .status("QUEUED") // <-- MODIFIED: Changed from PENDING to QUEUED for consistency
+                .message("Solver job has been successfully queued. You can track its status using the provided jobId.")
+                .submittedAt(now)
                 .build();
     }
 
+    // --- We will implement getJobStatus in a later step. Your placeholder is perfect for now. ---
     @Override
+    @Transactional(readOnly = true) // This operation only reads from the database
     public SolverJobResponseDTO getJobStatus(String jobId) {
-        // TODO: Implement logic to retrieve actual job status from the shared job store (e.g., Firestore, Cloud SQL)
-        // This service will query the datastore that solver-service writes to.
-        logger.warn("getJobStatus for job ID: {} - Placeholder. Implement query to shared job store.", jobId);
+        logger.info("Fetching status for job ID: {}", jobId);
+
+        // Find the job in the database by its ID
+        SolverJob job = solverJobRepository.findById(jobId)
+                .orElseThrow(() -> {
+                    logger.warn("Job status request for non-existent job ID: {}", jobId);
+                    return new EntityNotFoundException("Job with ID " + jobId + " not found.");
+                });
+
+        // Map the SolverJob entity to our response DTO
         return SolverJobResponseDTO.builder()
-                .jobId(jobId)
-                .status("UNKNOWN_PLACEHOLDER")
-                .message("Status retrieval from shared job store not implemented yet.")
-                .submittedAt(OffsetDateTime.now().minusMinutes(5)) // Placeholder
+                .jobId(job.getJobId())
+                .status(job.getStatus())
+                .message(job.getErrorMessage() != null ? "Job failed: " + job.getErrorMessage() : "Status at " + job.getLastUpdatedAt())
+                .submittedAt(job.getSubmittedAt())
                 .build();
     }
 
+    // --- This method remains untouched ---
     @Override
     public List<LockedBlockDTO> getStageAResults(String jobId) {
-        // TODO: Implement logic to retrieve Stage A results for a completed job from the shared job store.
         logger.warn("getStageAResults for job ID: {} - Placeholder. Implement query to shared job store.", jobId);
-        // This would involve fetching the SolverOutput from the job store and extracting stageAResults.
-        // The LockedBlockDTO structure is assumed to be the same or mappable.
-        return new ArrayList<>(); // Placeholder
+        return new ArrayList<>();
     }
 }

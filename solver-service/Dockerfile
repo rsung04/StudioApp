@@ -16,10 +16,10 @@ RUN mkdir -p /app/lib/native
 # Option 2: Download and extract OR-Tools during Docker build (Less ideal for reproducibility if URL changes)
 # Replace v9.9 and the specific tar.gz filename with the version you are using (from pom.xml).
 # Ensure the version matches the ortools-java dependency version.
-ARG ORTOOLS_VERSION=9.9.3992 
-ADD https://github.com/google/or-tools/releases/download/v9.9/or-tools_amd64_java_v${ORTOOLS_VERSION}.tar.gz /tmp/ortools.tar.gz
+ARG ORTOOLS_VERSION=9.12.4544
+ADD https://github.com/google/or-tools/releases/download/v9.12/or-tools_amd64_java_v${ORTOOLS_VERSION}.tar.gz /tmp/ortools.tar.gz
 RUN tar -xzf /tmp/ortools.tar.gz -C /tmp \
-    && cp /tmp/or-tools_java_v${ORTOOLS_VERSION}/lib/libjniortools.so /app/lib/native/libjniortools.so \
+&& cp /tmp/or-tools_java_v${ORTOOLS_VERSION}/lib/libjniortools.so /app/lib/native/libjniortools.so \
     && rm -rf /tmp/*
 # Note: The exact path within the tar.gz might vary slightly between OR-Tools versions. Verify it.
 

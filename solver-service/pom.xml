@@ -17,7 +17,7 @@
     <properties>
         <java.version>17</java.version>
         <spring-cloud-gcp.version>5.2.1</spring-cloud-gcp.version> <!-- Check for latest Spring Cloud GCP version -->
-        <ortools.version>9.9.3992</ortools.version> <!-- Or your preferred OR-Tools version -->
+        <ortools.version>9.12.4544</ortools.version> <!-- Align with main app's OR-Tools version -->
     </properties>
 
     <dependencyManagement>
@@ -40,6 +40,10 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-integration</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
