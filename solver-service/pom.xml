@@ -69,6 +69,13 @@
         </dependency>
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>google-ortools</id>
+            <url>https://google.github.io/or-tools/maven/</url>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>
