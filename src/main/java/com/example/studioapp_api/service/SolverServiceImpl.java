@@ -150,8 +150,8 @@ public class SolverServiceImpl implements SolverService {
         // === START: NEW LOGIC TO PERSIST THE JOB ===
         SolverJob newJob = new SolverJob();
         newJob.setJobId(jobId);
-        newJob.setTermId(term.getId());
-        newJob.setOrganizationId(organization.getId());
+        newJob.setTermId(term.getId().longValue()); // Cast to Long
+        newJob.setOrganizationId(organization.getId().longValue()); // Cast to Long
         newJob.setStatus("QUEUED"); // Set initial status
         newJob.setSubmittedAt(now);
         newJob.setLastUpdatedAt(now);
