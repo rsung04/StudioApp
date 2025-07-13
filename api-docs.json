@@ -1,0 +1,1893 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "StudioApp API",
+    "version": "1.0.0",
+    "description": "API for StudioApp Scheduling"
+  },
+  "paths": {
+    "/api/v1/organizations": {
+      "post": {
+        "summary": "Create a new organization",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Organization created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all organizations",
+        "responses": {
+          "200": {
+            "description": "A list of organizations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrganizationResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organizations/{id}": {
+      "get": {
+        "summary": "Get an organization by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update an organization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Organization updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an organization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Organization deleted"
+          }
+        }
+      }
+    },
+    "/api/v1/organizations/{organizationId}/studiolocations": {
+      "post": {
+        "summary": "Create a new studio location",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudioLocationRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Studio location created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudioLocationResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all studio locations for an organization",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of studio locations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StudioLocationResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/studiolocations/{locationId}": {
+      "get": {
+        "summary": "Get a studio location by ID",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The studio location",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudioLocationResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a studio location",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudioLocationRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Studio location updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudioLocationResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a studio location",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Studio location deleted"
+          }
+        }
+      }
+    },
+    "/api/v1/terms": {
+      "post": {
+        "summary": "Create a new term",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TermRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Term created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organizations/{organizationId}/terms": {
+      "get": {
+        "summary": "Get all terms for an organization",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of terms",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TermResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/terms/{termId}": {
+      "get": {
+        "summary": "Get a term by ID",
+        "parameters": [
+          {
+            "name": "termId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The term",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a term",
+        "parameters": [
+          {
+            "name": "termId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TermRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Term updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a term",
+        "parameters": [
+          {
+            "name": "termId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Term deleted"
+          }
+        }
+      }
+    },
+    "/api/v1/instructors/{instructorId}": {
+        "get": {
+            "summary": "Get a single instructor by its ID",
+            "parameters": [
+                {
+                    "name": "instructorId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "The instructor",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InstructorResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "put": {
+            "summary": "Update an instructor",
+            "parameters": [
+                {
+                    "name": "instructorId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/InstructorRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Instructor updated",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InstructorResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "delete": {
+            "summary": "Delete an instructor",
+            "parameters": [
+                {
+                    "name": "instructorId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "204": {
+                    "description": "Instructor deleted"
+                }
+            }
+        }
+    },
+    "/api/v1/organizations/{organizationId}/instructors": {
+        "post": {
+            "summary": "Create a new instructor for an organization",
+            "parameters": [
+                {
+                    "name": "organizationId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/InstructorRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "201": {
+                    "description": "Instructor created",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InstructorResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "get": {
+            "summary": "Get all instructors for an organization",
+            "parameters": [
+                {
+                    "name": "organizationId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "A list of instructors",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/InstructorResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/studiolocations/{studioLocationId}/rooms": {
+      "post": {
+        "summary": "Create a new room for a studio location",
+        "parameters": [
+          {
+            "name": "studioLocationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoomRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Room created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all rooms for a studio location",
+        "parameters": [
+          {
+            "name": "studioLocationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of rooms",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoomResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rooms/{roomId}": {
+        "get": {
+            "summary": "Get a room by ID",
+            "parameters": [
+                {
+                    "name": "roomId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "The room",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RoomResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "put": {
+            "summary": "Update a room",
+            "parameters": [
+                {
+                    "name": "roomId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RoomRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Room updated",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RoomResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "delete": {
+            "summary": "Delete a room",
+            "parameters": [
+                {
+                    "name": "roomId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "204": {
+                    "description": "Room deleted"
+                }
+            }
+        }
+    },
+    "/api/v1/organizations/{organizationId}/classdefinitions": {
+        "post": {
+            "summary": "Create a new class definition for an organization",
+            "parameters": [
+                {
+                    "name": "organizationId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ClassDefinitionRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "201": {
+                    "description": "Class definition created",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClassDefinitionResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "get": {
+            "summary": "Get all class definitions for an organization",
+            "parameters": [
+                {
+                    "name": "organizationId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "A list of class definitions",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/ClassDefinitionResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/classdefinitions/{id}": {
+        "get": {
+            "summary": "Get a class definition by ID",
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "The class definition",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClassDefinitionResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "put": {
+            "summary": "Update a class definition",
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ClassDefinitionRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Class definition updated",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClassDefinitionResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "delete": {
+            "summary": "Delete a class definition",
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "204": {
+                    "description": "Class definition deleted"
+                }
+            }
+        }
+    },
+    "/api/v1/organizations/{organizationId}/classtypes": {
+        "post": {
+            "summary": "Create a new class type for an organization",
+            "parameters": [
+                {
+                    "name": "organizationId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ClassTypeRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "201": {
+                    "description": "Class type created",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClassTypeResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "get": {
+            "summary": "Get all class types for an organization",
+            "parameters": [
+                {
+                    "name": "organizationId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "A list of class types",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/ClassTypeResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/classtypes/{classTypeId}": {
+        "get": {
+            "summary": "Get a class type by ID",
+            "parameters": [
+                {
+                    "name": "classTypeId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "The class type",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClassTypeResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "put": {
+            "summary": "Update a class type",
+            "parameters": [
+                {
+                    "name": "classTypeId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ClassTypeRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Class type updated",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClassTypeResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "delete": {
+            "summary": "Delete a class type",
+            "parameters": [
+                {
+                    "name": "classTypeId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "204": {
+                    "description": "Class type deleted"
+                }
+            }
+        }
+    },
+    "/api/v1/instructors/{instructorId}/availability-slots": {
+        "post": {
+            "summary": "Add an availability slot for an instructor",
+            "parameters": [
+                {
+                    "name": "instructorId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/InstructorAvailabilitySlotRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "201": {
+                    "description": "Availability slot created",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InstructorAvailabilitySlotResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "get": {
+            "summary": "Get all availability slots for an instructor",
+            "parameters": [
+                {
+                    "name": "instructorId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "A list of availability slots",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/InstructorAvailabilitySlotResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/availability-slots/{slotId}": {
+        "get": {
+            "summary": "Get a specific availability slot by its ID",
+            "parameters": [
+                {
+                    "name": "slotId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "The availability slot",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InstructorAvailabilitySlotResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "put": {
+            "summary": "Update a specific availability slot",
+            "parameters": [
+                {
+                    "name": "slotId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/InstructorAvailabilitySlotRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Availability slot updated",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InstructorAvailabilitySlotResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "delete": {
+            "summary": "Delete a specific availability slot",
+            "parameters": [
+                {
+                    "name": "slotId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "204": {
+                    "description": "Availability slot deleted"
+                }
+            }
+        }
+    },
+    "/api/v1/qualifications": {
+        "post": {
+            "summary": "Add a qualification for an instructor to teach a class",
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/InstructorClassQualificationRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "201": {
+                    "description": "Qualification created",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InstructorClassQualificationResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/instructors/{instructorId}/qualifications": {
+        "get": {
+            "summary": "Get all qualifications for a specific instructor",
+            "parameters": [
+                {
+                    "name": "instructorId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "A list of qualifications",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/InstructorClassQualificationResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/classdefinitions/{classDefinitionId}/qualified-instructors": {
+        "get": {
+            "summary": "Get all instructors qualified to teach a specific class definition",
+            "parameters": [
+                {
+                    "name": "classDefinitionId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "A list of qualifications",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/InstructorClassQualificationResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/instructors/{instructorId}/classdefinitions/{classDefinitionId}/qualifications": {
+        "put": {
+            "summary": "Update the notes for a specific qualification",
+            "parameters": [
+                {
+                    "name": "instructorId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                },
+                {
+                    "name": "classDefinitionId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/UpdateNotesRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Qualification updated",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InstructorClassQualificationResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "delete": {
+            "summary": "Remove a qualification",
+            "parameters": [
+                {
+                    "name": "instructorId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                },
+                {
+                    "name": "classDefinitionId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "204": {
+                    "description": "Qualification removed"
+                }
+            }
+        }
+    },
+    "/api/v1/priority-requests": {
+        "post": {
+            "summary": "Create a priority request for an instructor",
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/InstructorPriorityRequestRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "201": {
+                    "description": "Priority request created",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InstructorPriorityRequestResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/instructors/{instructorId}/terms/{termId}/priority-requests": {
+        "get": {
+            "summary": "Get all priority requests for an instructor in a given term",
+            "parameters": [
+                {
+                    "name": "instructorId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                },
+                {
+                    "name": "termId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "A list of priority requests",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/InstructorPriorityRequestResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/priority-requests/{requestId}": {
+        "get": {
+            "summary": "Get a specific priority request by its ID",
+            "parameters": [
+                {
+                    "name": "requestId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "The priority request",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InstructorPriorityRequestResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "put": {
+            "summary": "Update a priority request",
+            "parameters": [
+                {
+                    "name": "requestId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/InstructorPriorityRequestRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Priority request updated",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InstructorPriorityRequestResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "delete": {
+            "summary": "Delete a priority request",
+            "parameters": [
+                {
+                    "name": "requestId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "204": {
+                    "description": "Priority request deleted"
+                }
+            }
+        }
+    },
+    "/api/v1/class-session-requirements": {
+        "post": {
+            "summary": "Create a class session requirement",
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ClassSessionRequirementRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "201": {
+                    "description": "Class session requirement created",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClassSessionRequirementResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/terms/{termId}/class-session-requirements": {
+        "get": {
+            "summary": "Get all class session requirements for a given term",
+            "parameters": [
+                {
+                    "name": "termId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "A list of class session requirements",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/ClassSessionRequirementResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/class-session-requirements/{requirementId}": {
+        "get": {
+            "summary": "Get a specific class session requirement by its ID",
+            "parameters": [
+                {
+                    "name": "requirementId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "The class session requirement",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClassSessionRequirementResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "put": {
+            "summary": "Update a class session requirement",
+            "parameters": [
+                {
+                    "name": "requirementId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ClassSessionRequirementRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Class session requirement updated",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClassSessionRequirementResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "delete": {
+            "summary": "Delete a class session requirement",
+            "parameters": [
+                {
+                    "name": "requirementId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "204": {
+                    "description": "Class session requirement deleted"
+                }
+            }
+        }
+    },
+    "/api/v1/rooms/{roomId}/operating-hours": {
+        "post": {
+            "summary": "Create operating hours for a room",
+            "parameters": [
+                {
+                    "name": "roomId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RoomOperatingHoursRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "201": {
+                    "description": "Operating hours created",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RoomOperatingHoursResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "get": {
+            "summary": "Get all operating hours for a room",
+            "parameters": [
+                {
+                    "name": "roomId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "A list of operating hours",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/RoomOperatingHoursResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/operating-hours/{hoursId}": {
+        "get": {
+            "summary": "Get a specific operating hour by its ID",
+            "parameters": [
+                {
+                    "name": "hoursId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "The operating hour",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RoomOperatingHoursResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "put": {
+            "summary": "Update an operating hour",
+            "parameters": [
+                {
+                    "name": "hoursId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RoomOperatingHoursRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Operating hour updated",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RoomOperatingHoursResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "delete": {
+            "summary": "Delete an operating hour",
+            "parameters": [
+                {
+                    "name": "hoursId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "responses": {
+                "204": {
+                    "description": "Operating hour deleted"
+                }
+            }
+        }
+    },
+    "/api/v1/solver/run": {
+        "post": {
+            "summary": "Triggers the solver to run",
+            "requestBody": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/SolveRequestDTO"
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "202": {
+                    "description": "Solver job accepted",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SolverJobResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "/api/v1/solver/status/{jobId}": {
+        "get": {
+            "summary": "Retrieves the status of a solver job",
+            "parameters": [
+                {
+                    "name": "jobId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "The solver job status",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SolverJobResponseDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+  },
+  "components": {
+    "schemas": {
+      "OrganizationRequestDTO": {
+        "type": "object",
+        "properties": {}
+      },
+      "OrganizationResponseDTO": {
+        "type": "object",
+        "properties": {}
+      },
+      "StudioLocationRequestDTO": {
+        "type": "object",
+        "properties": {}
+      },
+      "StudioLocationResponseDTO": {
+        "type": "object",
+        "properties": {}
+      },
+      "TermRequestDTO": {
+        "type": "object",
+        "properties": {}
+      },
+      "TermResponseDTO": {
+        "type": "object",
+        "properties": {}
+      },
+      "InstructorRequestDTO": {
+        "type": "object",
+        "properties": {}
+      },
+      "InstructorResponseDTO": {
+        "type": "object",
+        "properties": {}
+      },
+      "RoomRequestDTO": {
+        "type": "object",
+        "properties": {}
+      },
+      "RoomResponseDTO": {
+        "type": "object",
+        "properties": {}
+      },
+      "ClassDefinitionRequestDTO": {
+        "type": "object",
+        "properties": {}
+      },
+      "ClassDefinitionResponseDTO": {
+        "type": "object",
+        "properties": {}
+      },
+        "ClassTypeRequestDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "ClassTypeResponseDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "InstructorAvailabilitySlotRequestDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "InstructorAvailabilitySlotResponseDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "InstructorClassQualificationRequestDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "InstructorClassQualificationResponseDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "UpdateNotesRequestDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "InstructorPriorityRequestRequestDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "InstructorPriorityRequestResponseDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "ClassSessionRequirementRequestDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "ClassSessionRequirementResponseDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "RoomOperatingHoursRequestDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "RoomOperatingHoursResponseDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "SolveRequestDTO": {
+            "type": "object",
+            "properties": {}
+        },
+        "SolverJobResponseDTO": {
+            "type": "object",
+            "properties": {}
+        }
+    }
+  }
+}
